@@ -3,6 +3,7 @@
 from __future__ import division
 from collections import OrderedDict
 
+from datetime import datetime, timedelta
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE)
 from vnpy.trader.uiQt import QtWidgets
@@ -45,10 +46,10 @@ class TopIncrAlgo(AlgoTemplate):
 
         for tmp in contracts:
             baseCurrency,quoteCurrency = tmp.name.split('/')
-            #计价币种相同就加入监控，获取合约基本开盘价
-            if quoteCurrency == self.quoteCurrency:
-                self.getKLine(tmp.symbol, '1day', 5)
-                detector = TimeSeriesAnormalyDetector(0.0, 0.5, 0.0, 0.5, 0.5, 5)
+            #计价币种相同就加入监控
+            if quoteCurrency == self.quoteCurrency:  
+                self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
                 self.analyseList[tmp.vtSymbol] = detector
                 self.subscribe(tmp.vtSymbol)
                 self.count += 1
@@ -60,7 +61,6 @@ class TopIncrAlgo(AlgoTemplate):
     
     #----------------------------------------------------------------------
     def onTick(self, tick):
-        print 'TopIncrAlgo onTick: %s'%tick
         """"""
         #huobiGateway文件对订阅的深度和详细数据进行了封装
         vtSymbol = tick.vtSymbol      
@@ -78,7 +78,7 @@ class TopIncrAlgo(AlgoTemplate):
         
         if (topN <3 and total > 10  and tick.lastPrice > preData[4]):
             #迅速拉升
-            self.writeLog(u'%s合约执行买入，买入价格为:' %(vtSymbol,tick.lastPrice))
+            self.writeLog(u'%s合约执行买入，买入价格为:%s' %(vtSymbol,tick.lastPrice))
             pass
         
     #----------------------------------------------------------------------
@@ -92,6 +92,19 @@ class TopIncrAlgo(AlgoTemplate):
         """"""
         pass
     
+    #----------------------------------------------------------------------
+    def onHistory(self, history):
+        """""" 
+        symbol = history.symbol
+        vtSymbol = history.vtSymbol
+        
+        print ('TopIncrAlgo onHistory: %s'%(vtSymbol))
+        
+        for d in history.barList:
+            time = datetime.fromtimestamp(d['id']/1000)
+            topen = d['open']
+            print("%s getKlineHistory, time=%s,open=%s" %(symbol, time, topen))
+            
     #----------------------------------------------------------------------
     def onTimer(self):
         """"""
@@ -125,13 +138,7 @@ class TopIncrAlgo(AlgoTemplate):
             self.writeLog(u'发出刷单买卖委托，价格：%s，数量：%s' %(midPrice, self.orderVolume))
         
         self.varEvent()
-        
-    #----------------------------------------------------------------------
-    def onHistory(self, data, reqid):
-        """查询K线回调"""
-        for d in data:
-            kline.symbol = d['base-currency'] + d['quote-currency']
-            
+    
     #----------------------------------------------------------------------
     def onStop(self):
         """"""

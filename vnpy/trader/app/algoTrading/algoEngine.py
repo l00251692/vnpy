@@ -10,7 +10,7 @@ import importlib
 
 from vnpy.event import Event
 from vnpy.rpc import RpcServer
-from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE
+from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_HISTORY
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
                                     PRICETYPE_LIMITPRICE, PRICETYPE_MARKETPRICE,
                                     OFFSET_OPEN, OFFSET_CLOSE,
@@ -57,6 +57,7 @@ class AlgoEngine(object):
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+        self.eventEngine.register(EVENT_HISTORY, self.processHistoryEvent)
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -98,6 +99,15 @@ class AlgoEngine(object):
         for algo in self.algoDict.values():
             algo.updateTimer()
     
+    #----------------------------------------------------------------------
+    def processHistoryEvent(self, event):
+        """K线历史记录事件"""
+        print ('processHistoryEvent:')
+        history = event.dict_['data']
+        
+        for algo in self.algoDict.values():
+                algo.updateHistory(history)
+                
     #----------------------------------------------------------------------
     def addAlgo(self, algoSetting):
         """新增算法"""
@@ -291,10 +301,21 @@ class AlgoEngine(object):
     
     #----------------------------------------------------------------------
     def getAllContracts(self, algo):
-        """查询所有合约"""
+        """查询ALL合约"""
         return  self.mainEngine.getAllContracts()
     
     #----------------------------------------------------------------------
+    def getKLineHistory(self, vtSymbol, period, size):
+        """查询KLine History"""
+        contract = self.mainEngine.getContract(vtSymbol)
+        if not contract:
+            self.writeLog(u'%s查询合约失败，Get Kline Fail.：%s' %(algo.algoName, vtSymbol))
+            return
+        
+        return  self.mainEngine.getKLineHistory(contract.symbol, period, size, contract.gatewayName)
+    
+    #----------------------------------------------------------------------
+	
     def saveAlgoSetting(self, algoSetting):
         """保存算法配置"""
         settingName = algoSetting['settingName']

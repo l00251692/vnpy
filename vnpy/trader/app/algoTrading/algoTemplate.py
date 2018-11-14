@@ -79,6 +79,14 @@ class AlgoTemplate(object):
             return
         
         self.onTimer()
+	
+    #----------------------------------------------------------------------
+    def updateHistory(self, history):
+	""""""
+	if not self.active:
+	    return
+
+	self.onHistory(history)	
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -156,8 +164,13 @@ class AlgoTemplate(object):
     #----------------------------------------------------------------------
     def getAllContracts(self):
         """查询所有合约"""
-        return self.engine.getAllContracts(self)      
-        
+        return self.engine.getAllContracts(self)
+	
+    #----------------------------------------------------------------------
+    def getKLineHistory(self, vtSymbol, period, size):
+	"""查询K线回调"""
+	return self.engine.getKLineHistory(vtSymbol, period, size)
+    
     #----------------------------------------------------------------------
     def roundValue(self, value, change):
         """标准化价格或者数量"""

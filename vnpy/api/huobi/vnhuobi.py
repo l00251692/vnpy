@@ -204,8 +204,13 @@ class TradeApi(object):
         result, data = func(path, params)
         
         if result:
-            if data['status'] == 'ok':
-                callback(data['data'], reqid)
+            if data['status'] == 'ok':  
+                
+                if 'ch' in data:
+                    ch = data['ch']
+                else:
+                    ch = None
+                callback(data['data'], reqid, ch)
             else:
                 msg = u'错误代码：%s，错误信息：%s' %(data['err-code'], data['err-msg'])
                 self.onError(msg, reqid)
@@ -369,6 +374,22 @@ class TradeApi(object):
         return self.addReq(path, params, func, callback)     
     
     #----------------------------------------------------------------------
+    def getKLineHistory(self, symbol, period, size):
+        """查询账户"""
+        path = '/market/history/kline'
+        
+        params = {
+            'symbol': symbol,
+            'period': period,
+            'size': size
+        }   
+            
+        func = self.apiGet
+        callback = self.onGetKLineHistory
+    
+        return self.addReq(path, params, func, callback)            
+       
+    #----------------------------------------------------------------------
     def placeOrder(self, accountid, amount, symbol, type_, price=None, source=None):
         """下单"""
         if self.hostname == HUOBI_API_HOST:
@@ -425,66 +446,71 @@ class TradeApi(object):
         print(msg, reqid)
         
     #----------------------------------------------------------------------
-    def onGetSymbols(self, data, reqid):
+    def onGetSymbols(self, data, reqid, ch):
         """查询代码回调"""
         #print reqid, data 
         for d in data:
             print(d)
     
     #----------------------------------------------------------------------
-    def onGetCurrencys(self, data, reqid):
+    def onGetCurrencys(self, data, reqid, ch):
         """查询货币回调"""
         print(reqid, data)        
     
     #----------------------------------------------------------------------
-    def onGetTimestamp(self, data, reqid):
+    def onGetTimestamp(self, data, reqid, ch):
         """查询时间回调"""
         print(reqid, data)    
         
     #----------------------------------------------------------------------
-    def onGetAccounts(self, data, reqid):
+    def onGetAccounts(self, data, reqid, ch):
         """查询账户回调"""
         print(reqid, data)     
     
     #----------------------------------------------------------------------
-    def onGetAccountBalance(self, data, reqid):
+    def onGetAccountBalance(self, data, reqid, ch):
         """查询余额回调"""
         print(reqid, data)
         for d in data['data']['list']:
             print(d)
         
     #----------------------------------------------------------------------
-    def onGetOrders(self, data, reqid):
+    def onGetOrders(self, data, reqid, ch):
         """查询委托回调"""
         print(reqid, data)    
         
     #----------------------------------------------------------------------
-    def onGetMatchResults(self, data, reqid):
+    def onGetMatchResults(self, data, reqid, ch):
         """查询成交回调"""
         print(reqid, data)      
         
     #----------------------------------------------------------------------
-    def onGetOrder(self, data, reqid):
+    def onGetOrder(self, data, reqid, ch):
         """查询单一委托回调"""
         print(reqid, data)    
         
     #----------------------------------------------------------------------
-    def onGetMatchResult(self, data, reqid):
+    def onGetMatchResult(self, data, reqid, ch):
         """查询单一成交回调"""
+        print(reqid, data)   
+        
+    #----------------------------------------------------------------------
+    def onGetKLineHistory(self, data, reqid, ch):
+        """查询KLine History"""
         print(reqid, data)    
         
     #----------------------------------------------------------------------
-    def onPlaceOrder(self, data, reqid):
+    def onPlaceOrder(self, data, reqid, ch):
         """委托回调"""
         print(reqid, data)
     
     #----------------------------------------------------------------------
-    def onCancelOrder(self, data, reqid):
+    def onCancelOrder(self, data, reqid, ch):
         """撤单回调"""
         print(reqid, data)          
         
     #----------------------------------------------------------------------
-    def onBatchCancel(self, data, reqid):
+    def onBatchCancel(self, data, reqid, ch):
         """批量撤单回调"""
         print(reqid, data)      
 

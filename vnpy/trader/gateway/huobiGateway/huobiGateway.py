@@ -93,6 +93,10 @@ class HuobiGateway(VtGateway):
         self.dataApi.subscribe(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
+    def getKLineHistory(self, symbol, period, size):
+        self.tradeApi.getKLineHistory( symbol, period, size)
+        
+    #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         return self.tradeApi.sendOrder(orderReq)
@@ -459,7 +463,7 @@ class HuobiTradeApi(TradeApi):
         self.gateway.onError(err)
 
     #----------------------------------------------------------------------
-    def onGetSymbols(self, data, reqid):
+    def onGetSymbols(self, data, reqid, ch):
         """查询代码回调"""
         for d in data:
             contract = VtContractData()
@@ -480,19 +484,19 @@ class HuobiTradeApi(TradeApi):
         self.getAccounts()
 
     #----------------------------------------------------------------------
-    def onGetCurrencys(self, data, reqid):
+    def onGetCurrencys(self, data, reqid, ch):
         """查询货币回调"""
         pass
 
     #----------------------------------------------------------------------
-    def onGetTimestamp(self, data, reqid):
+    def onGetTimestamp(self, data, reqid, ch):
         """查询时间回调"""
         event = Event(EVENT_LOG+'Time')
         event.dict_['data'] = datetime.fromtimestamp(data/1000)
         self.gateway.eventEngine.put(event)
 
     #----------------------------------------------------------------------
-    def onGetAccounts(self, data, reqid):
+    def onGetAccounts(self, data, reqid, ch):
         """查询账户回调"""
         for d in data:
             if str(d['type']) == 'spot':
@@ -500,7 +504,7 @@ class HuobiTradeApi(TradeApi):
                 self.writeLog(u'交易账户%s查询成功' %self.accountid)
 
     #----------------------------------------------------------------------
-    def onGetAccountBalance(self, data, reqid):
+    def onGetAccountBalance(self, data, reqid, ch):
         """查询余额回调"""
         accountDict = {}
         
@@ -524,7 +528,7 @@ class HuobiTradeApi(TradeApi):
             self.gateway.onAccount(account)
 
     #----------------------------------------------------------------------
-    def onGetOrders(self, data, reqid):
+    def onGetOrders(self, data, reqid, ch):
         """查询委托回调"""
         # 比对寻找已结束的委托号
         """
@@ -619,7 +623,7 @@ class HuobiTradeApi(TradeApi):
             #self.qryOrderID = qryOrderID
 
     #----------------------------------------------------------------------
-    def onGetMatchResults(self, data, reqid):
+    def onGetMatchResults(self, data, reqid, ch):
         """查询成交回调"""
         data.reverse()
 
@@ -668,7 +672,7 @@ class HuobiTradeApi(TradeApi):
             self.gateway.onTrade(trade)
 
     #----------------------------------------------------------------------
-    def onGetOrder(self, data, reqid):
+    def onGetOrder(self, data, reqid, ch):
         """查询单一委托回调"""
         #orderID = data['id']
         #strOrderID = str(orderID)
@@ -689,12 +693,28 @@ class HuobiTradeApi(TradeApi):
         pass
 
     #----------------------------------------------------------------------
-    def onGetMatchResult(self, data, reqid):
+    def onGetMatchResult(self, data, reqid, ch):
         """查询单一成交回调"""
         print(reqid, data)
 
     #----------------------------------------------------------------------
-    def onPlaceOrder(self, data, reqid):
+    def onGetKLineHistory(self, data, reqid, ch):
+        """查询KLine History"""
+        print ('onGetKLineHistory:')
+        symbol = ch.split('.')[1]
+        history = VtHistoryData()
+        history.symbol = symbol
+        history.exchange = EXCHANGE_HUOBI
+        history.vtSymbol = '.'.join([history.symbol, history.exchange])  
+        history.queryID = reqid     # 查询号
+        
+        for d in data:
+            history.barList.append(d)
+            
+        self.gateway.onHistory(history) 
+        
+    #----------------------------------------------------------------------
+    def onPlaceOrder(self, data, reqid, ch):
         """委托回调"""
         localid = self.reqLocalDict[reqid]
 
@@ -708,11 +728,11 @@ class HuobiTradeApi(TradeApi):
             self.cancelOrder(req)
 
     #----------------------------------------------------------------------
-    def onCancelOrder(self, data, reqid):
+    def onCancelOrder(self, data, reqid, ch):
         """撤单回调"""
         self.writeLog(u'委托撤单成功：%s' %data)
 
     #----------------------------------------------------------------------
-    def onBatchCancel(self, data, reqid):
+    def onBatchCancel(self, data, reqid, ch):
         """批量撤单回调"""
         print(reqid, data)

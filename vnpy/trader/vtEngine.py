@@ -113,6 +113,9 @@ class MainEngine(object):
         
         if gateway:
             gateway.connect()
+            
+            # 接口连接后自动执行数据库连接的任务
+            self.dbConnect()        
    
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
@@ -161,6 +164,14 @@ class MainEngine(object):
         
         if gateway:
             gateway.qryPosition()
+     
+    #----------------------------------------------------------------------
+    def getKLineHistory(self,symbol, period, size, gatewayName):
+        """查询K线历史数据"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            gateway.getKLineHistory(symbol, period, size)    
             
     #----------------------------------------------------------------------
     def exit(self):
