@@ -151,7 +151,12 @@ class AlgoTemplate(object):
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """"""
-        return self.engine.getContract(self, vtSymbol)    
+        return self.engine.getContract(self, vtSymbol)  
+    
+    #----------------------------------------------------------------------
+    def getAllContracts(self):
+        """查询所有合约"""
+        return self.engine.getAllContracts(self)      
         
     #----------------------------------------------------------------------
     def roundValue(self, value, change):

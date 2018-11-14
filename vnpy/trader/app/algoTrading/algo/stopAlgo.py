@@ -69,8 +69,8 @@ class StopAlgo(AlgoTemplate):
                 price = max(price, tick.lowerLimit)
                 
             func = self.sell
-            
-        self.vtOrderID = func(self.vtSymbol, price, self.volume, offset=self.offset)
+        orderVolume = self.totalVolume - self.tradedVolume     
+        self.vtOrderID = func(self.vtSymbol, price, orderVolume, offset=self.offset)
         
         msg = u'停止单已触发，代码：%s，方向：%s, 价格：%s，数量：%s，开平：%s' %(self.vtSymbol,
                                                                                 self.direction,

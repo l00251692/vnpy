@@ -90,8 +90,7 @@ class HuobiGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        pass
-        #self.dataApi.subscribe(subscribeReq)
+        self.dataApi.subscribe(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -249,7 +248,7 @@ class HuobiDataApi(DataApi):
         tick = self.tickDict.get(symbol, None)
         if not tick:
             return
-
+        
         tick.datetime = datetime.fromtimestamp(data['ts']/1000)
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S.%f')
@@ -319,8 +318,7 @@ class HuobiDataApi(DataApi):
         if tick.bidPrice1:
             newtick = copy(tick)
             self.gateway.onTick(newtick)
-
-
+        
 ########################################################################
 class HuobiTradeApi(TradeApi):
     """交易API实现"""

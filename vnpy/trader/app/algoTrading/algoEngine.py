@@ -290,6 +290,11 @@ class AlgoEngine(object):
         return contract
     
     #----------------------------------------------------------------------
+    def getAllContracts(self, algo):
+        """查询所有合约"""
+        return  self.mainEngine.getAllContracts()
+    
+    #----------------------------------------------------------------------
     def saveAlgoSetting(self, algoSetting):
         """保存算法配置"""
         settingName = algoSetting['settingName']
