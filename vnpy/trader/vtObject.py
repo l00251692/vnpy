@@ -449,6 +449,31 @@ class VtHistoryData(object):
     
 
 ########################################################################
+class VtAnalyseData(object):
+    """K线时间序列数据"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """"""
+        self.vtSymbol = EMPTY_STRING    # vt系统代码
+        self.symbol = EMPTY_STRING      # 代码
+        self.exchange = EMPTY_STRING    # 交易所
+        
+        self.size = EMPTY_INT                   # 合约大小
+        self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
+        self.baseList = []              # VtBaseData列表
+        self.basePrice = EMPTY_FLOAT  
+        self.increaseCount = EMPTY_INT       #buy conditation count
+        self.buyAverPrice = EMPTY_FLOAT #buy averange price
+        self.buyVolume = EMPTY_FLOAT #buy volume
+        self.count = EMPTY_INT       #timer count
+        
+        self.tradeList = []             #order history
+        self.orderVolume = EMPTY_FLOAT #order volume
+        self.positionVolume = EMPTY_FLOAT #position volume
+        self.offset = EMPTY_UNICODE  #开仓平仓状态
+        
+########################################################################
 class VtSubscribeReq(object):
     """订阅行情时传入的对象类"""
 
