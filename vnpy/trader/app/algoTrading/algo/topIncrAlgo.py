@@ -11,6 +11,7 @@ from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
 from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 from Detector import TimeSeriesAnormalyDetector
 from vnpy.trader.vtObject import *
+from vnpy.trader.vtTaskTimer import TaskTimer
 
 ########################################################################
 class TopIncrAlgo(AlgoTemplate):
@@ -38,7 +39,8 @@ class TopIncrAlgo(AlgoTemplate):
         if not contracts:
             self.writeLog(u'%s查询合约失败，无法获得合约列表' %(algo.algoName)) 
             return
-
+        
+        
         for tmp in contracts:
             baseCurrency,quoteCurrency = tmp.name.split('/')
             #计价币种相同就加入监控
@@ -52,6 +54,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.count = 0
                 analyse.increaseCount = 0
                 analyse.buyAverPrice = 0.0
+                analyse.lastPrice  = 0.0
                 analyse.buyVolume = 0.0
                 analyse.orderVolume = 0.0
                 analyse.positionVolume = 0.0
@@ -63,8 +66,17 @@ class TopIncrAlgo(AlgoTemplate):
                 self.subscribe(tmp.vtSymbol)
             else:
                 pass   
+        timer = TaskTimer()
+        timer.join_task(taskTimer, [], timing=0)
+        timer.start()
         self.paramEvent()
         self.varEvent()
+    
+    #----------------------------------------------------------------------
+    def taskTimer(self):
+        self.writeLog(u'定时任务执行,获取最新的交易价格%s') 
+        for key,analyse in self.analyseDict.items():
+            self.getKLineHistory(analyse.vtSymbol, '1day', 5) 
     
     #----------------------------------------------------------------------
     def onTick(self, tick):
@@ -93,17 +105,23 @@ class TopIncrAlgo(AlgoTemplate):
         #开仓状态才进行买入
         if increase > self.inPer and increase < self.inStopPer:
             #buy
-            analyse.increaseCount += 1
-            if analyse.increaseCount > 1 and analyse.offset == OFFSET_OPEN:
-                orderVolume = self.totalVolume - analyse.orderVolume
-                analyse.orderVolume  = analyse.orderVolume + orderVolume
-                if orderVolume > 0:
-                    #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
-                    #self.buy(vtSymbol, current, orderVolume)
-                    analyse.buyAverPrice  = current
-                    analyse.buyVolume = orderVolume
-                    analyse.positionVolume = orderVolume
-                    self.writeLog(u'%s合约委托买入，买入价格%s,买入数量：%s' %(vtSymbol,current,orderVolume))  
+            print('onTick:%s,current=%s,pre=%s' %(vtSymbol,current,analyse.lastPrice))
+            if current > analyse.lastPrice:
+                analyse.increaseCount += 1
+                analyse.lastPrice = current
+                #注意:初始化analyse.lastPrice为零，第一次肯定满足
+                if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN:
+                    orderVolume = self.orderVolume - analyse.orderVolume
+                    analyse.orderVolume  = analyse.orderVolume + orderVolume
+                    if orderVolume > 0:
+                        #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
+                        #self.buy(vtSymbol, current, orderVolume)
+                        analyse.buyAverPrice  = current
+                        analyse.buyVolume = orderVolume
+                        analyse.positionVolume = orderVolume
+                        self.writeLog(u'%s合约委托买入，买入价格%s,买入数量：%s' %(vtSymbol,current,orderVolume)) 
+            else:
+                analyse.lastPrice = current
                 
         if (current - analyse.buyAverPrice)/base >self.outPer:
             #sell

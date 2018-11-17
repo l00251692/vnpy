@@ -462,7 +462,8 @@ class VtAnalyseData(object):
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
         self.baseList = []              # VtBaseData列表
-        self.basePrice = EMPTY_FLOAT  
+        self.basePrice = EMPTY_FLOAT 
+        self.lastPrice = EMPTY_FLOAT 
         self.increaseCount = EMPTY_INT       #buy conditation count
         self.buyAverPrice = EMPTY_FLOAT #buy averange price
         self.buyVolume = EMPTY_FLOAT #buy volume
