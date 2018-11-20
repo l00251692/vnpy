@@ -188,7 +188,7 @@ class MainEngine(object):
             appEngine.stop()
         
         # 保存数据引擎里的合约数据到硬盘
-        self.dataEngine.saveContracts()
+        #self.dataEngine.saveContracts()
     
     #----------------------------------------------------------------------
     def writeLog(self, content):
@@ -433,7 +433,7 @@ class DataEngine(object):
         self.tdPenaltyList = globalSetting['tdPenalty']     # 平今手续费惩罚的产品代码列表
         
         # 读取保存在硬盘的合约数据
-        self.loadContracts()
+        #self.loadContracts()
         
         # 注册事件监听
         self.registerEvent()
