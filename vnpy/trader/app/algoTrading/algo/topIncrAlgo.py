@@ -98,6 +98,11 @@ class TopIncrAlgo(AlgoTemplate):
             #decline ,add pubishment mechanisms
             if analyse.positionVolume > 0:
                 analyse.increaseCount -= 1
+            else:
+                analyse.increaseCount -= 1
+                if analyse.increaseCount == -10:
+                    #持续下跌今天就不再监控，此时为了减少CPU压力
+                    self.unsubscribe(vtSymbol)
             return
        
         increase = (current - base)/base
@@ -108,33 +113,27 @@ class TopIncrAlgo(AlgoTemplate):
             print('onTick:%s,current=%s,pre=%s' %(vtSymbol,current,analyse.lastPrice))
             if current > analyse.lastPrice:
                 analyse.increaseCount += 1
-                analyse.lastPrice = current
+                
                 #注意:初始化analyse.lastPrice为零，第一次肯定满足
                 if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN:
                     orderVolume = self.orderVolume - analyse.orderVolume
-                    analyse.orderVolume  = analyse.orderVolume + orderVolume
                     if orderVolume > 0:
-                        #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
-                        #self.buy(vtSymbol, current, orderVolume)
-                        analyse.buyAverPrice  = current
-                        analyse.buyVolume = orderVolume
-                        analyse.positionVolume = orderVolume
-                        self.writeLog(u'%s合约委托买入，买入价格%s,买入数量：%s' %(vtSymbol,current,orderVolume)) 
-            else:
-                analyse.lastPrice = current
+                        if orderVolume < analyse.size:
+                            self.writeLog(u'%s合约买入数量%s，小于合约最小买入数量%s,暂不买入' %(vtSymbol,orderVolume,analyse.size))
+                        else:
+                            analyse.orderVolume  = analyse.orderVolume + orderVolume
+                            #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
+                            self.buy(vtSymbol, current, orderVolume)
+                            self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,current,orderVolume))
+            
+        analyse.lastPrice = current
                 
         if (current - analyse.buyAverPrice)/base >self.outPer:
             #sell
             orderVolume = analyse.positionVolume
             if orderVolume > 0:
-                #self.sell(vtSymbol, current, orderVolume)
-                self.writeLog(u'%s合约委托卖出，卖出价格%s,卖出数量：%s' %(vtSymbol,current,orderVolume)) 
-                analyse.buyAverPrice = 0.0
-                analyse.buyVolume = 0.0
-                analyse.orderVolume = 0.0
-                analyse.increaseCount = 0
-                analyse.count = 0
-                analyse.offset = OFFSET_OPEN
+                self.sell(vtSymbol, current, orderVolume)
+                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,current,orderVolume))
         
     #----------------------------------------------------------------------
     def onTrade(self, trade):
@@ -193,10 +192,15 @@ class TopIncrAlgo(AlgoTemplate):
                     #超时后还有持仓,此时如果买一价比平均价高则委托卖出，最多亏损手续费
                     tick = self.getTick(analyse.vtSymbol)
                     if tick.bidPrice1 >= analyse.buyAverPrice:
-                        self.sell(vtSymbol, tick.bidPrice1 + analyse.priceTick, analyse.positionVolume)
+                        price = tick.bidPrice1 + analyse.priceTick
+                        self.sell(analyse.vtSymbol, price, analyse.positionVolume)
+                        self.writeLog(u'%s达到设置等待时间，上涨，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,price,analyse.positionVolume))
                     else:
                         #否则就挂单，可能长期卖不出去
-                        self.sell(vtSymbol, analyse.buyAverPrice, analyse.positionVolume)
+                        price = analyse.buyAverPrice * (1 + 0.02)
+                        self.sell(analyse.vtSymbol, price, analyse.positionVolume)
+                        self.writeLog(u'%s达到设置等待时间，下降，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,price,analyse.positionVolume))
+                    
             else:
                 pass
     

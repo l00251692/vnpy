@@ -125,6 +125,11 @@ class AlgoTemplate(object):
     def subscribe(self, vtSymbol):
         """"""
         self.engine.subscribe(self, vtSymbol)
+	
+    #----------------------------------------------------------------------
+    def unsubscribe(self, vtSymbol):
+	""""""
+	self.engine.unsubscribe(self, vtSymbol)	
     
     #----------------------------------------------------------------------
     def buy(self, vtSymbol, price, volume, priceType=None, offset=None):

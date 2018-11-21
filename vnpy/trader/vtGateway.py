@@ -126,6 +126,11 @@ class VtGateway(object):
         pass
     
     #----------------------------------------------------------------------
+    def unsubscribe(self, subscribeReq):
+        """取消订阅行情"""
+        pass
+    
+    #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         pass

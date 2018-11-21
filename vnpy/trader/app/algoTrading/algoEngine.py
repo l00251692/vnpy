@@ -156,6 +156,19 @@ class AlgoEngine(object):
             req.symbol = contract.symbol
             req.exchange = contract.exchange
             self.mainEngine.subscribe(req, contract.gatewayName)
+            
+    #----------------------------------------------------------------------
+    def unsubscribe(self, algo, vtSymbol):
+        """"""
+        contract = self.mainEngine.getContract(vtSymbol)
+        if not contract:
+            self.writeLog(u'%s取消订阅行情失败，找不到合约%s' %(algo.algoName, vtSymbol))
+            return        
+     
+        req = VtSubscribeReq()
+        req.symbol = contract.symbol
+        req.exchange = contract.exchange
+        self.mainEngine.unsubscribe(req, contract.gatewayName)            
 
     #----------------------------------------------------------------------
     def sendOrder(self, algo, vtSymbol, direction, price, volume, 

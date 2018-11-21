@@ -212,7 +212,7 @@ class TradeApi(object):
                     ch = None
                 callback(data['data'], reqid, ch)
             else:
-                msg = u'错误代码：%s，错误信息：%s' %(data['err-code'], data['err-msg'])
+                msg = u'错误代码：%s，错误信息：%s，请求:%s' %(data['err-code'], data['err-msg'],path)
                 self.onError(msg, reqid)
         else:
             self.onError(data, reqid)
@@ -644,16 +644,34 @@ class DataApi(object):
         self.subTopic(topic)
         
     #----------------------------------------------------------------------
+    def unsubscribeMarketDepth(self, symbol):
+        """取消订阅行情深度"""
+        topic = 'market.%s.depth.step0' %symbol
+        self.unsubTopic(topic)
+        
+    #----------------------------------------------------------------------
     def subscribeTradeDetail(self, symbol):
         """订阅成交细节"""
         topic = 'market.%s.trade.detail' %symbol
         self.subTopic(topic)
         
     #----------------------------------------------------------------------
+    def unsubscribeTradeDetail(self, symbol):
+        """取消订阅成交细节"""
+        topic = 'market.%s.trade.detail' %symbol
+        self.unsubTopic(topic)
+        
+    #----------------------------------------------------------------------
     def subscribeMarketDetail(self, symbol):
         """订阅市场细节"""
         topic = 'market.%s.detail' %symbol
         self.subTopic(topic)
+    
+    #----------------------------------------------------------------------
+    def unsubscribeMarketDetail(self, symbol):
+        """取消订阅市场细节"""
+        topic = 'market.%s.detail' %symbol
+        self.unsubTopic(topic)
         
     #----------------------------------------------------------------------
     def onError(self, msg):

@@ -91,6 +91,11 @@ class HuobiGateway(VtGateway):
     def subscribe(self, subscribeReq):
         """订阅行情"""
         self.dataApi.subscribe(subscribeReq.symbol)
+        
+    #----------------------------------------------------------------------
+    def unsubscribe(self, subscribeReq):
+        """取消订阅行情"""
+        self.dataApi.unsubscribe(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
     def getKLineHistory(self, symbol, period, size):
@@ -226,7 +231,20 @@ class HuobiDataApi(DataApi):
         self.subscribeMarketDepth(symbol)
         self.subscribeMarketDetail(symbol)
         #self.subscribeTradeDetail(symbol)
+        
+        
+    #----------------------------------------------------------------------
+    def unsubscribe(self, symbol):
+        """取消订阅合约"""
+        #self.subscribeDict[subscribeReq.symbol] = subscribeReq
 
+        if not self.connectionStatus:
+            return
+
+        self.unsubscribeMarketDepth(symbol)
+        self.unsubscribeMarketDetail(symbol)
+        #self.unsubscribeTradeDetail    (symbol)
+        
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""

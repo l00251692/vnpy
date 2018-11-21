@@ -124,7 +124,14 @@ class MainEngine(object):
         
         if gateway:
             gateway.subscribe(subscribeReq)
-  
+            
+    #----------------------------------------------------------------------
+    def unsubscribe(self, subscribeReq, gatewayName):
+        """取消订阅特定接口的行情"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            gateway.unsubscribe(subscribeReq)
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
