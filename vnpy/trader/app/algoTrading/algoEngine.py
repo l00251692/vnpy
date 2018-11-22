@@ -10,7 +10,7 @@ import importlib
 
 from vnpy.event import Event
 from vnpy.rpc import RpcServer
-from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_HISTORY
+from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_POSITION, EVENT_HISTORY
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
                                     PRICETYPE_LIMITPRICE, PRICETYPE_MARKETPRICE,
                                     OFFSET_OPEN, OFFSET_CLOSE,
@@ -92,6 +92,15 @@ class AlgoEngine(object):
         algo = self.orderAlgoDict.get(trade.vtOrderID, None)
         if algo:
             algo.updateTrade(trade)
+            
+    #----------------------------------------------------------------------
+    def processPositionEvent(self, event):
+        """持仓事件"""
+        position = event.dict_['data']
+        
+        algo = self.orderAlgoDict.get(trade.vtOrderID, None)
+        if algo:
+            algo.updateTrade(position)
     
     #----------------------------------------------------------------------
     def processTimerEvent(self, event):
@@ -326,6 +335,16 @@ class AlgoEngine(object):
             return
         
         return  self.mainEngine.getKLineHistory(contract.symbol, period, size, contract.gatewayName)
+    
+    #----------------------------------------------------------------------
+    def qryPositionSync(self, gatewayName):
+        """"""
+        return  self.mainEngine.qryPositionSync(gatewayName)
+    
+    #----------------------------------------------------------------------
+    def qryTradeSync(self, symbool, gatewayName):
+        """"""
+        return  self.mainEngine.qryTradeSync(symbool,gatewayName)    
     
     #----------------------------------------------------------------------
 	

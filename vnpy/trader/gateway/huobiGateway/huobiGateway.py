@@ -102,6 +102,14 @@ class HuobiGateway(VtGateway):
         self.tradeApi.getKLineHistory( symbol, period, size)
         
     #----------------------------------------------------------------------
+    def qryPositionSync(self):
+        return self.tradeApi.qryPositionSync()     
+        
+    #----------------------------------------------------------------------
+    def qryTradeSync(self, symbol):
+        return self.tradeApi.qryTradeSync(symbol)            
+        
+    #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         return self.tradeApi.sendOrder(orderReq)
@@ -391,7 +399,13 @@ class HuobiTradeApi(TradeApi):
         """查询持仓"""
         if self.accountid:
             self.getAccountBalance(self.accountid)
-
+                  
+    #----------------------------------------------------------------------
+    def qryPositionSync(self):
+        """查询持仓"""
+        if self.accountid:
+            return self.getAccountBalanceSync(self.accountid)
+            
     #----------------------------------------------------------------------
     def qryOrder(self):
         """查询委托"""
@@ -421,6 +435,17 @@ class HuobiTradeApi(TradeApi):
         
         for symbol in self.symbols:
             self.getMatchResults(symbol, startDate=todayDate, size=50)     # 只查询今日最新50笔成交
+            
+    #----------------------------------------------------------------------
+    def qryTradeSync(self, symbol):
+        """查询成交"""
+        if not self.accountid:
+            return
+        
+        now = datetime.now()
+        todayDate = now.strftime('%Y-%m-%d')
+        
+        return self.getMatchResultsSync(symbol, endDate=todayDate, size=50)     # 只查询到今日最新50笔成交
 
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):

@@ -293,6 +293,18 @@ class TradeApi(object):
         return self.addReq(path, params, func, callback) 
     
     #----------------------------------------------------------------------
+    def getAccountBalanceSync(self, accountid):
+        """查询余额"""
+        if self.hostname == HUOBI_API_HOST:
+            path = '/v1/account/accounts/%s/balance' %accountid
+        else:
+            path = '/v1/hadax/account/accounts/%s/balance' %accountid
+            
+        params = {}
+    
+        return self.apiGet(path, params) 
+    
+    #----------------------------------------------------------------------
     def getOrders(self, symbol, states, types=None, startDate=None, 
                   endDate=None, from_=None, direct=None, size=None):
         """查询委托"""
@@ -347,7 +359,32 @@ class TradeApi(object):
         func = self.apiGet
         callback = self.onGetMatchResults
 
-        return self.addReq(path, params, func, callback)   
+        return self.addReq(path, params, func, callback)  
+    
+    #----------------------------------------------------------------------
+    def getMatchResultsSync(self, symbol, types=None, startDate=None, 
+                        endDate=None, from_=None, direct=None, size=None):
+        """查询委托"""
+        path = '/v1/order/matchresults'
+
+        params = {
+            'symbol': symbol
+        }
+
+        if types:
+            params['types'] = types
+        if startDate:
+            params['start-date'] = startDate
+        if endDate:
+            params['end-date'] = endDate        
+        if from_:
+            params['from'] = from_
+        if direct:
+            params['direct'] = direct
+        if size:
+            params['size'] = size        
+
+        return self.apiGet(path, params)
     
     #----------------------------------------------------------------------
     def getOrder(self, orderid):

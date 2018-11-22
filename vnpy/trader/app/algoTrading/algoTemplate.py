@@ -56,6 +56,14 @@ class AlgoTemplate(object):
             return
         
         self.onTrade(trade)
+	
+    #----------------------------------------------------------------------
+    def updatePosition(self, position):
+	""""""
+	if not self.active:
+	    return
+
+	self.onPosition(position)	
     
     #----------------------------------------------------------------------
     def updateOrder(self, order):
@@ -105,6 +113,11 @@ class AlgoTemplate(object):
     def onTrade(self, trade):
         """"""
         pass
+    
+    #----------------------------------------------------------------------
+    def onPosition(self, position):
+	""""""
+	pass    
     
     #----------------------------------------------------------------------
     def onOrder(self, order):
@@ -175,6 +188,16 @@ class AlgoTemplate(object):
     def getKLineHistory(self, vtSymbol, period, size):
 	"""查询K线回调"""
 	return self.engine.getKLineHistory(vtSymbol, period, size)
+    
+    #----------------------------------------------------------------------
+    def qryPositionSync(self, gatewayName):
+	""""""
+	return self.engine.qryPositionSync(gatewayName)
+    
+    #----------------------------------------------------------------------
+    def qryTradeSync(self, symbol, gatewayName):
+	""""""
+	return self.engine.qryTradeSync(symbol, gatewayName)
     
     #----------------------------------------------------------------------
     def roundValue(self, value, change):

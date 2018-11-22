@@ -474,6 +474,28 @@ class VtAnalyseData(object):
         self.positionVolume = EMPTY_FLOAT #position volume
         self.offset = EMPTY_UNICODE  #开仓平仓状态
         
+########################################################################        
+class VtAnalyse2Data(object):
+    """持仓监控对象数据"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """"""       
+        self.currency = EMPTY_STRING      # 代码
+        self.vtCurrency = EMPTY_STRING    # vt系统代码
+        self.symbol = EMPTY_STRING      # 代码
+        self.vtSymbol = EMPTY_STRING    # vt系统代码
+        self.exchange = EMPTY_STRING    # 交易所
+        
+        self.size = EMPTY_INT                   # 合约大小
+        self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
+        self.buyAverPrice = EMPTY_FLOAT #buy averange price
+        self.minSellPrice = EMPTY_FLOAT #min sell price
+        self.calculateVolume = EMPTY_FLOAT
+        self.positionVolume = EMPTY_FLOAT #position volume
+        self.available = EMPTY_FLOAT #position volume
+        self.tradeList = []             #order history
+        
 ########################################################################
 class VtSubscribeReq(object):
     """订阅行情时传入的对象类"""

@@ -178,8 +178,24 @@ class MainEngine(object):
         gateway = self.getGateway(gatewayName)
         
         if gateway:
-            gateway.getKLineHistory(symbol, period, size)    
+            gateway.getKLineHistory(symbol, period, size)  
             
+    #----------------------------------------------------------------------
+    def qryPositionSync(self, gatewayName):
+        """查询持仓数据同步接口"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            return gateway.qryPositionSync()  
+            
+    #----------------------------------------------------------------------
+    def qryTradeSync(self, symbol, gatewayName):
+        """查询成交数据同步接口"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            return gateway.qryTradeSync(symbol)  
+                  
     #----------------------------------------------------------------------
     def exit(self):
         """退出程序前调用，保证正常退出"""        
