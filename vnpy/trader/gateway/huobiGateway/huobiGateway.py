@@ -108,6 +108,11 @@ class HuobiGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryTradeSync(self, symbol):
         return self.tradeApi.qryTradeSync(symbol)            
+     
+    #----------------------------------------------------------------------
+    def addSymbolsMonitor(self, symbol):
+        """"""
+        self.tradeApi.addSymbolsMonitor(symbol)
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -446,7 +451,15 @@ class HuobiTradeApi(TradeApi):
         todayDate = now.strftime('%Y-%m-%d')
         
         return self.getMatchResultsSync(symbol, endDate=todayDate, size=50)     # 只查询到今日最新50笔成交
-
+    
+    #----------------------------------------------------------------------
+    def addSymbolsMonitor(self, symbol):
+        """加入监控的交易对"""
+        if symbol in self.symbols:
+            pass
+        else:
+            self.symbols.append(symbol)
+ 
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""

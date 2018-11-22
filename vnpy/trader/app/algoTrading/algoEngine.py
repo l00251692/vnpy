@@ -177,7 +177,12 @@ class AlgoEngine(object):
         req = VtSubscribeReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
-        self.mainEngine.unsubscribe(req, contract.gatewayName)            
+        self.mainEngine.unsubscribe(req, contract.gatewayName)      
+        
+    #----------------------------------------------------------------------
+    def addSymbolsMonitor(self, gatewayName, symbol):
+        """"""
+        self.mainEngine.addSymbolsMonitor(gatewayName, symbol) 
 
     #----------------------------------------------------------------------
     def sendOrder(self, algo, vtSymbol, direction, price, volume, 

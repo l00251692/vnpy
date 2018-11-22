@@ -131,6 +131,11 @@ class VtGateway(object):
         pass
     
     #----------------------------------------------------------------------
+    def addSymbolsMonitor(self, symbol):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         pass

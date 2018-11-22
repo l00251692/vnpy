@@ -75,10 +75,19 @@ class AutoTradeAlgo(AlgoTemplate):
                         fees = float(d['filled-fees'])                       
                         
                         if 'buy' in d['type']:
-                            if analyse.calculateVolume + (volume - fees) >= analyse.available:
+                            if analyse.calculateVolume + (volume -fees) > analyse.available:
                                 analyse.minSellPrice = analyse.buyAverPrice * (1 + self.outPer)
                                 self.subscribe(analyse.vtSymbol)
+                                self.addSymbolsMonitor(analyse.symbol)
                                 break;
+                            elif analyse.calculateVolume + (volume -fees) == analyse.available:
+                                analyse.calculateVolume += (volume - fees)
+                                analyse.buyAverPrice = (analyse.buyAverPrice + price * volume)/analyse.calculateVolume                                
+                                analyse.minSellPrice = analyse.buyAverPrice * (1 + self.outPer)
+                                self.subscribe(analyse.vtSymbol)
+                                self.addSymbolsMonitor(analyse.symbol)
+                                break;
+                            
                             analyse.calculateVolume += (volume - fees)
                             analyse.buyAverPrice = (analyse.buyAverPrice + price * volume)/analyse.calculateVolume
                         else:  
@@ -113,7 +122,7 @@ class AutoTradeAlgo(AlgoTemplate):
             contract = self.getContract(analyse.vtSymbol)
             if not contract:
                 self.writeLog(u'%s合约查找失败，无法卖出' %analyse.vtSymbol)
-            orderValume = round(analyse.available, contract.amountPrecision)
+            orderValume = self.roundValue2(analyse.available, contract.amountPrecision)
             if orderValume > 1:
                 self.sell(analyse.vtSymbol, current, orderValume)
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,current,orderValume))

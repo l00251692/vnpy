@@ -460,6 +460,7 @@ class VtAnalyseData(object):
         self.symbol = EMPTY_STRING      # 代码
         self.exchange = EMPTY_STRING    # 交易所
         
+        self.amountPrecision = EMPTY_INT        # 合约数量精度
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
         self.baseList = []              # VtBaseData列表

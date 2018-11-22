@@ -51,6 +51,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.exchange = tmp.exchange
                 analyse.priceTick = tmp.priceTick
                 analyse.size = tmp.size
+                analyse.amountPrecision = tmp.amountPrecision
                 analyse.count = 0
                 analyse.increaseCount = 0
                 analyse.buyAverPrice = 0.0
@@ -130,10 +131,12 @@ class TopIncrAlgo(AlgoTemplate):
                 
         if (current - analyse.buyAverPrice)/base >self.outPer:
             #sell
-            orderVolume = analyse.positionVolume
-            if orderVolume > 0:
+            orderValume = round(analyse.positionVolume, analyse.amountPrecision.amountPrecision)
+            if orderVolume >= 1:
                 self.sell(vtSymbol, current, orderVolume)
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,current,orderVolume))
+            else:
+                self.writeLog(u'%s合约持有数量小于1,限价单无法卖出。' %analyse.vtSymbol)
         
     #----------------------------------------------------------------------
     def onTrade(self, trade):

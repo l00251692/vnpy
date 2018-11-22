@@ -132,6 +132,15 @@ class MainEngine(object):
         
         if gateway:
             gateway.unsubscribe(subscribeReq)
+            
+    #----------------------------------------------------------------------
+    def addSymbolsMonitor(self, gatewayName, symbol):
+        """"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            gateway.addSymbolsMonitor(symbol)     
+            
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
