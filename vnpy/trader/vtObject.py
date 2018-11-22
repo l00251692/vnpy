@@ -392,6 +392,7 @@ class VtContractData(VtBaseData):
         self.name = EMPTY_UNICODE               # 合约中文名
         
         self.productClass = EMPTY_UNICODE       # 合约类型
+        self.amountPrecision = EMPTY_INT         # 合约数量精度
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
         

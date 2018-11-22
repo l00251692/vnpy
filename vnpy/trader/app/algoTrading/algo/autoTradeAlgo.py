@@ -48,7 +48,7 @@ class AutoTradeAlgo(AlgoTemplate):
                     analyse.calculateVolume = 0.0
                     analyse.positionVolume += float(d['balance'])
                     analyse.available = analyse.positionVolume
-                    if d['type'] == 'fozen':
+                    if d['type'] == 'frozen':
                         analyse.available = analyse.positionVolume - float(d['balance']) 
                     self.analyseDict[analyse.vtSymbol] = analyse
             else:
@@ -110,10 +110,17 @@ class AutoTradeAlgo(AlgoTemplate):
         current = tick.lastPrice
         
         if current > analyse.minSellPrice and analyse.available > 0:
-            self.sell(analyse.vtSymbol, current, analyse.available)
-            self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,current,analyse.available))
-            analyse.available = 0
-        
+            contract = self.getContract(analyse.vtSymbol)
+            if not contract:
+                self.writeLog(u'%s合约查找失败，无法卖出' %analyse.vtSymbol)
+            orderValume = round(analyse.available, contract.amountPrecision)
+            if orderValume > 1:
+                self.sell(analyse.vtSymbol, current, orderValume)
+                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,current,orderValume))
+                analyse.available = 0
+            else:
+                self.writeLog(u'%s合约持有数量小于1,限价单无法卖出' %analyse.vtSymbol)
+                analyse.available = 0
     #----------------------------------------------------------------------
     def onTrade(self, trade):
         """"""

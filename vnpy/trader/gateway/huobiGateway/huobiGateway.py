@@ -518,6 +518,7 @@ class HuobiTradeApi(TradeApi):
 
             contract.name = '/'.join([d['base-currency'].upper(), d['quote-currency'].upper()])
             contract.priceTick = 1 / pow(10, d['price-precision'])
+            contract.amountPrecision = d['amount-precision']
             contract.size = 1 / pow(10, d['amount-precision'])
             contract.productClass = PRODUCT_SPOT
 
@@ -564,7 +565,7 @@ class HuobiTradeApi(TradeApi):
                 accountDict[currency] = account
                 
             account.balance += float(d['balance'])
-            if d['type'] == 'fozen':
+            if d['type'] == 'frozen':
                 account.available = account.balance - float(d['balance'])
 
         for account in accountDict.values():
