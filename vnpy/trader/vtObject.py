@@ -163,6 +163,7 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
+        self.filledFees = EMPTY_FLOAT           # 成交手续费
 
     #----------------------------------------------------------------------
     @staticmethod
@@ -472,7 +473,6 @@ class VtAnalyseData(object):
         self.count = EMPTY_INT       #timer count
         
         self.tradeList = []             #order history
-        self.orderVolume = EMPTY_FLOAT #order volume
         self.positionVolume = EMPTY_FLOAT #position volume
         self.offset = EMPTY_UNICODE  #开仓平仓状态
         

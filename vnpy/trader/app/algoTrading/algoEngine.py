@@ -183,6 +183,11 @@ class AlgoEngine(object):
     def addSymbolsMonitor(self, gatewayName, symbol):
         """"""
         self.mainEngine.addSymbolsMonitor(gatewayName, symbol) 
+        
+    #----------------------------------------------------------------------
+    def delSymbolsMonitor(self, gatewayName, symbol):
+        """"""
+        self.mainEngine.delSymbolsMonitor(gatewayName, symbol)         
 
     #----------------------------------------------------------------------
     def sendOrder(self, algo, vtSymbol, direction, price, volume, 

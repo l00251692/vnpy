@@ -140,9 +140,14 @@ class AlgoTemplate(object):
         self.engine.subscribe(self, vtSymbol)
 	
     #----------------------------------------------------------------------
-    def addSymbolsMonitor(self, vtSymbol):
+    def addSymbolsMonitor(self, gatewayName, symbol):
 	""""""
-	self.engine.addSymbolsMonitor(self, vtSymbol)	
+	self.engine.addSymbolsMonitor(gatewayName, symbol)	
+	
+    #----------------------------------------------------------------------
+    def delSymbolsMonitor(self, gatewayName, symbol):
+	""""""
+	self.engine.delSymbolsMonitor(gatewayName, symbol)		
 	
     #----------------------------------------------------------------------
     def unsubscribe(self, vtSymbol):

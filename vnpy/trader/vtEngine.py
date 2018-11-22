@@ -142,6 +142,14 @@ class MainEngine(object):
             gateway.addSymbolsMonitor(symbol)     
             
     #----------------------------------------------------------------------
+    def delSymbolsMonitor(self, gatewayName, symbol):
+        """"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            gateway.delSymbolsMonitor(symbol)             
+            
+    #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
         # 如果创建了风控引擎，且风控检查失败则不发单

@@ -115,6 +115,11 @@ class HuobiGateway(VtGateway):
         self.tradeApi.addSymbolsMonitor(symbol)
         
     #----------------------------------------------------------------------
+    def delSymbolsMonitor(self, symbol):
+        """"""
+        self.tradeApi.delSymbolsMonitor(symbol)        
+        
+    #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         return self.tradeApi.sendOrder(orderReq)
@@ -459,6 +464,12 @@ class HuobiTradeApi(TradeApi):
             pass
         else:
             self.symbols.append(symbol)
+            
+    #----------------------------------------------------------------------
+    def delSymbolsMonitor(self, symbol):
+        """加入监控的交易对"""
+        if symbol in self.symbols:
+            self.symbols.remove(symbol)
  
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -722,6 +733,7 @@ class HuobiTradeApi(TradeApi):
 
             trade.price = float(d['price'])
             trade.volume = float(d['filled-amount'])
+            trade.filledFees = float(d['filled-fees'])
 
             dt = datetime.fromtimestamp(d['created-at']/1000)
             trade.tradeTime = dt.strftime('%H:%M:%S')

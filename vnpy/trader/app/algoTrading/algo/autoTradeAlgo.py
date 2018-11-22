@@ -17,7 +17,7 @@ from vnpy.trader.vtTaskTimer import TaskTimer
 class AutoTradeAlgo(AlgoTemplate):
     """TOP拉升识别，快速识别拉升套利"""
     
-    templateName = u'Auto监控自动成交'
+    templateName = u'Auto监控自动卖出'
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):
@@ -35,7 +35,9 @@ class AutoTradeAlgo(AlgoTemplate):
       
         if result:
             if data['status'] == 'ok':       
-                for d in data['list']:
+                for d in data['data']['list']:
+                    if float(d['balance']) <= 0.0:
+                        continue                    
                     analyse = VtAnalyse2Data()
                     analyse.currency = d['currency'].lower()
                     analyse.exchange = 'HUOBI'
@@ -78,14 +80,14 @@ class AutoTradeAlgo(AlgoTemplate):
                             if analyse.calculateVolume + (volume -fees) > analyse.available:
                                 analyse.minSellPrice = analyse.buyAverPrice * (1 + self.outPer)
                                 self.subscribe(analyse.vtSymbol)
-                                self.addSymbolsMonitor(analyse.symbol)
+                                self.addSymbolsMonitor('HUOBI',analyse.symbol)
                                 break;
                             elif analyse.calculateVolume + (volume -fees) == analyse.available:
                                 analyse.calculateVolume += (volume - fees)
                                 analyse.buyAverPrice = (analyse.buyAverPrice + price * volume)/analyse.calculateVolume                                
                                 analyse.minSellPrice = analyse.buyAverPrice * (1 + self.outPer)
                                 self.subscribe(analyse.vtSymbol)
-                                self.addSymbolsMonitor(analyse.symbol)
+                                self.addSymbolsMonitor('HUOBI',analyse.symbol)
                                 break;
                             
                             analyse.calculateVolume += (volume - fees)
@@ -99,7 +101,7 @@ class AutoTradeAlgo(AlgoTemplate):
                     continue
             else:
                 continue
-        self.writeLog(u'算法启动完成')    
+   
         self.paramEvent()
         self.varEvent()
     
@@ -123,7 +125,7 @@ class AutoTradeAlgo(AlgoTemplate):
             if not contract:
                 self.writeLog(u'%s合约查找失败，无法卖出' %analyse.vtSymbol)
             orderValume = self.roundValue2(analyse.available, contract.amountPrecision)
-            if orderValume > 1:
+            if orderValume >= 1:
                 self.sell(analyse.vtSymbol, current, orderValume)
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,current,orderValume))
                 analyse.available = 0
