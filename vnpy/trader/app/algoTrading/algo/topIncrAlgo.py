@@ -155,7 +155,10 @@ class TopIncrAlgo(AlgoTemplate):
             analyse.buyVolume = analyse.buyVolume + trade.volume
             analyse.positionVolume = analyse.positionVolume + trade.volume - trade.filledFees
         else:
-            analyse.buyAverPrice = (analyse.buyAverPrice * analyse.buyVolume - trade.volume * trade.price)/(analyse.positionVolume - trade.volume)
+            if analyse.positionVolume - trade.volume == 0:
+                analyse.buyAverPrice = 0
+            else:
+                analyse.buyAverPrice = (analyse.buyAverPrice * analyse.buyVolume - trade.volume * trade.price)/(analyse.positionVolume - trade.volume)   
             analyse.positionVolume = analyse.positionVolume - trade.volume
             analyse.buyVolume = analyse.buyVolume - trade.volume
             analyse.increaseCount = 0
