@@ -454,7 +454,7 @@ class MarketMonitor(BasicMonitor):
         self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
-        self.registerEvent()
+        #self.registerEvent()
         
         self.setFixedHeight(400)
 
@@ -529,7 +529,7 @@ class TradeMonitor(BasicMonitor):
         self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
-        self.registerEvent()
+        #self.registerEvent()
 
         self.setFixedHeight(200)
         
@@ -565,7 +565,7 @@ class OrderMonitor(BasicMonitor):
         self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
-        self.registerEvent()
+        #self.registerEvent()
         self.connectSignal()
         
     #----------------------------------------------------------------------
@@ -612,7 +612,7 @@ class PositionMonitor(BasicMonitor):
         self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
-        self.registerEvent()
+        #self.registerEvent()
         
         
 ########################################################################
