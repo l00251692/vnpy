@@ -212,20 +212,17 @@ class AlgoTemplate(object):
     #----------------------------------------------------------------------
     def roundValue(self, value, change):
         """标准化价格或者数量"""
+	"""修改为四舍五不入"""
         if not change:
             return value
         
         n = value / change
         v = round(n, 0) * change
-        return v  
-    
-    #----------------------------------------------------------------------
-    def roundValue2(self, f_str, n):
-	"""四舍五不入获取价格或数量"""
-	f_str = str(f_str)      # f_str = '{}'.format(f_str) 也可以转换为字符串
-	a, b, c = f_str.partition('.')
-	c = (c+"0"*n)[:n]       # 如论传入的函数有几位小数，在字符串后面都添加n为小数0
-	return float(".".join([a, c]))
+	
+	if v > value:
+	    return (v - change)
+	else:
+	    return v  
     
     #----------------------------------------------------------------------
     def putVarEvent(self, d):

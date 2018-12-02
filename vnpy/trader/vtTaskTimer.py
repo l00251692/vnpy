@@ -139,3 +139,9 @@ class TaskTimer:
             return thread.ident
 
         self.write_log("Warning", "TaskTimer already run,Do not restart agarin!")
+        
+    def stop(self):
+        """""" 
+        self.task_queue = []
+        self.is_running = False 
+   

@@ -34,7 +34,7 @@ class TopIncrAlgo(AlgoTemplate):
         self.outPer = float(setting['outPer'])/100  # 委托卖出条件，达到条件就卖出
         self.waitTime = int(setting['waitTime'])  # 委托买入后等待成交时间，没有成交到时间后取消订单
         
-        self.writeLog(u'算法启动中...请耐心等待')
+        self.writeLog(u'算法启动...请耐心等待')
         
         #根据条件查找要监控的合约
         contracts = self.getAllContracts()
@@ -47,14 +47,17 @@ class TopIncrAlgo(AlgoTemplate):
             baseCurrency,quoteCurrency = tmp.name.split('/')
             #计价币种相同就加入监控
             if quoteCurrency == self.quoteCurrency: 
+                #排除过期的火币
+                if baseCurrency == 'VEN': 
+                    continue
                 analyse =VtAnalyseData()
                 analyse.symbol = tmp.symbol
                 analyse.vtSymbol = tmp.vtSymbol
                 analyse.exchange = tmp.exchange
                 analyse.priceTick = tmp.priceTick
                 analyse.size = tmp.size
-                analyse.amountPrecision = tmp.amountPrecision
                 analyse.count = 0
+                analyse.basePrice = 0
                 analyse.increaseCount = 0
                 analyse.buyAverPrice = 0.0
                 analyse.lastPrice  = 0.0
@@ -66,12 +69,11 @@ class TopIncrAlgo(AlgoTemplate):
                 #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
                 #self.analyseDict[tmp.vtSymbol] = detector
                 self.subscribe(tmp.vtSymbol)
-                self.addSymbolsMonitor('HUOBI',analyse.symbol)
             else:
                 pass   
-        timer = TaskTimer()
-        timer.join_task(self.taskTimer, [], timing=0)
-        timer.start()
+        #self.timer = TaskTimer()
+        #self.timer.join_task(self.taskTimer, [], timing=0)
+        #self.timer.start()
         self.paramEvent()
         self.varEvent()
     
@@ -90,20 +92,21 @@ class TopIncrAlgo(AlgoTemplate):
         
         if not analyse:
             return
-        
-        current = tick.lastPrice
-        base = analyse.basePrice
-        
+       
+        base = analyse.basePrice       
         if base == 0:
             return
-            
+        
+        current = tick.lastPrice  
+        
         if (current <= base):
             #decline ,add pubishment mechanisms
+            #TODO:CPU性能提升后就不需要此处理
             if analyse.positionVolume > 0:
                 analyse.increaseCount -= 1
             else:
                 analyse.increaseCount -= 1
-                if analyse.increaseCount == -10:
+                if analyse.increaseCount == -100:
                     #持续下跌今天就不再监控，此时为了减少CPU压力
                     self.unsubscribe(vtSymbol)
                     self.delSymbolsMonitor('HUOBI',analyse.symbol)
@@ -113,36 +116,48 @@ class TopIncrAlgo(AlgoTemplate):
         
         
         #开仓状态才进行买入
-        if increase > self.inPer and increase < self.inStopPer:
+        if current > analyse.lastPrice:
+            analyse.increaseCount += 1        
+            if increase > self.inPer and increase < self.inStopPer:
             #buy
-            print('onTick:%s,current=%s,pre=%s' %(vtSymbol,current,analyse.lastPrice))
-            if current > analyse.lastPrice:
-                analyse.increaseCount += 1
-                
-                #注意:初始化analyse.lastPrice为零，第一次肯定满足
+                print('onTick:%s,current=%s,pre=%s' %(vtSymbol,current,analyse.lastPrice))
+
                 if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN:
-                    orderVolume = self.orderVolume - analyse.buyVolume
+                    orderVolume = self.roundValue(self.orderVolume - analyse.buyVolume, analyse.size)
                     if orderVolume > 0:
-                        analyse.buyVolume  = analyse.buyVolume + orderVolume
+                        #对于价格过高的，因账户资金问题先按照最低购入量买
+                        if current > 5:
+                            orderVolume = analyse.size
+                            analyse.buyVolume = self.orderVolume
+                        else:
+                            analyse.buyVolume  = analyse.buyVolume + orderVolume
                         #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
-                        self.buy(vtSymbol, current, orderVolume)
-                        self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,current,orderVolume))
+                        price = min(current, tick.askPrice1)
+                        self.buy(vtSymbol, price, orderVolume) 
+                        self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,orderVolume))
                         analyse.lastPrice = current
+                        #增加到监控列表里才能监听到订单的成交信息
+                        self.addSymbolsMonitor('HUOBI',analyse.symbol)
                         return
+        else:
+            #analyse.increaseCount -= 1
+            pass
+            
         analyse.lastPrice = current
                 
-        if (current - analyse.buyAverPrice)/base >self.outPer and analyse.positionVolume > 0:
+        if analyse.buyAverPrice > 0 and (current - analyse.buyAverPrice)/analyse.buyAverPrice > self.outPer:
             #sell
-            orderVolume = self.roundValue2(analyse.positionVolume, analyse.amountPrecision)
-            if orderVolume >= 1:
-                self.sell(vtSymbol, current, orderVolume)
-                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,current,orderVolume))
-            else:
-                self.writeLog(u'%s合约持有数量小于1,限价单无法卖出。' %analyse.vtSymbol)
+            orderVolume = self.roundValue(analyse.positionVolume, analyse.size)
+            price = max(current, tick.askPrice1 - analyse.priceTick)
+            if orderVolume > 0:
+                self.writeLog(u'%s合约此时增长次数:%s' %(analyse.increaseCount))
+                self.sell(vtSymbol, price, orderVolume)
+                analyse.buyVolume = analyse.buyVolume - orderVolume
+                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,orderVolume))
         
     #----------------------------------------------------------------------
     def onTrade(self, trade):
-        """deal callback"""
+        """"""
         vtSymbol = trade.vtSymbol
         analyse = self.analyseDict[vtSymbol]
         
@@ -151,23 +166,21 @@ class TopIncrAlgo(AlgoTemplate):
             return
         
         if trade.direction == DIRECTION_LONG:
-            analyse.buyAverPrice = (analyse.buyAverPrice * analyse.buyVolume + trade.volume * trade.price)/(analyse.buyVolume + trade.volume - trade.filledFees)
-            analyse.buyVolume = analyse.buyVolume + trade.volume
+            analyse.buyAverPrice = (analyse.buyAverPrice * analyse.positionVolume + trade.volume * trade.price)/(analyse.positionVolume + trade.volume - trade.filledFees)
             analyse.positionVolume = analyse.positionVolume + trade.volume - trade.filledFees
         else:
-            if analyse.positionVolume - trade.volume == 0:
+            if analyse.positionVolume == trade.volume:
                 analyse.buyAverPrice = 0
             else:
-                analyse.buyAverPrice = (analyse.buyAverPrice * analyse.buyVolume - trade.volume * trade.price)/(analyse.positionVolume - trade.volume)   
+                analyse.buyAverPrice = (analyse.buyAverPrice * analyse.positionVolume - trade.volume * trade.price)/(analyse.positionVolume - trade.volume) 
+                
             analyse.positionVolume = analyse.positionVolume - trade.volume
-            analyse.buyVolume = analyse.buyVolume - trade.volume
+            
             analyse.increaseCount = 0
             analyse.count = 0
             analyse.offset = OFFSET_OPEN
      
         analyse.tradeList.append(trade.tradeID)
-        
-        self.varEvent()
     
     #----------------------------------------------------------------------
     def onOrder(self, order):
@@ -197,23 +210,20 @@ class TopIncrAlgo(AlgoTemplate):
                     #超时后还有持仓,此时如果买一价比平均价高则委托卖出，最多亏损手续费
                     tick = self.getTick(analyse.vtSymbol)
                     if tick.bidPrice1 >= analyse.buyAverPrice:
-                        price = tick.bidPrice1 + analyse.priceTick
-                        orderValume = self.roundValue2(analyse.positionVolume, analyse.amountPrecision)
-                        if orderVolume >= 1:                        
-                            self.sell(analyse.vtSymbol, price, orderValume)
-                            self.writeLog(u'%s达到设置等待时间，上涨，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,price,orderValume))
-                        else:
-                            self.writeLog(u'%s达到设置等待时间，合约持有数量小于1,限价单无法卖出.' %analyse.vtSymbol)
+                        orderVolume = self.roundValue(analyse.positionVolume, analyse.size)
+                        if orderVolume > 0:
+                            self.writeLog(u'%s合约此时增长次数:%s' %(analyse.increaseCount))
+                            self.sell(analyse.vtSymbol, tick.bidPrice1, orderVolume)
+                            self.writeLog(u'%s达到设置等待时间，微量上涨，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,tick.bidPrice1,orderVolume))
                     else:
                         #否则就挂单，可能长期卖不出去
-                        price = analyse.buyAverPrice * (1 + 0.05)
-                        orderValume = self.roundValue2(analyse.positionVolume, analyse.amountPrecision)
-                        if orderVolume >= 1:                         
-                            self.sell(analyse.vtSymbol, price, orderValume)
-                            self.writeLog(u'%s达到设置等待时间，下降，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,price,orderValume))
-                        else:
-                            self.writeLog(u'%s达到设置等待时间，合约持有数量小于1,限价单无法卖出.' %analyse.vtSymbol)
-                    
+                        price = analyse.buyAverPrice * (1 + 0.005)
+                        newPrice = self.roundValue(price, analyse.priceTick)
+                        orderVolume = self.roundValue(analyse.positionVolume, analyse.size)
+                        if orderVolume > 0:  
+                            self.writeLog(u'%s合约此时增长次数:%s' %(analyse.increaseCount))
+                            self.sell(analyse.vtSymbol, newPrice, orderVolume)
+                            self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,orderVolume)) 
             else:
                 pass
 
@@ -221,6 +231,9 @@ class TopIncrAlgo(AlgoTemplate):
     #----------------------------------------------------------------------
     def onStop(self):
         """"""
+        if self.timer:
+            self.timer.stop()
+        
         self.writeLog(u'停止算法')
         self.varEvent()
         
@@ -229,7 +242,6 @@ class TopIncrAlgo(AlgoTemplate):
         """更新变量"""
         d = OrderedDict()
         d[u'算法状态'] = self.active
-        d['active'] = self.active
         self.putVarEvent(d)
     
     #----------------------------------------------------------------------

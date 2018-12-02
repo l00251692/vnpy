@@ -30,7 +30,7 @@ class AutoTradeAlgo(AlgoTemplate):
         self.quoteCurrency = str(setting['quoteCurrency']).lower()            # 基础币种
         self.outPer = float(setting['outPer'])/100  # 委托卖出条件，达到条件就卖出
         
-        self.writeLog(u'算法启动中...请耐心等待')
+        self.writeLog(u'算法启动...请耐心等待')
         result, data = self.qryPositionSync('HUOBI')
       
         if result:
@@ -92,8 +92,9 @@ class AutoTradeAlgo(AlgoTemplate):
                             
                             analyse.calculateVolume += (volume - fees)
                             analyse.buyAverPrice = (analyse.buyAverPrice + price * volume)/analyse.calculateVolume
-                        else:  
-                            analyse.buyAverPrice = (analyse.buyAverPrice * analyse.calculateVolume - price * volume)/(analyse.calculateVolume -volume)
+                        else: 
+                            if analyse.calculateVolume > volume:
+                                analyse.buyAverPrice = (analyse.buyAverPrice * analyse.calculateVolume - price * volume)/(analyse.calculateVolume -volume)
                             analyse.calculateVolume -= volume    
                 else:
                     #msg = u'错误代码：%s，错误信息：%s' %(data['err-code'], data['err-msg'])
@@ -115,22 +116,21 @@ class AutoTradeAlgo(AlgoTemplate):
         if not analyse:
             return
         
-        if analyse.minSellPrice == 0:
+        if analyse.minSellPrice == 0 or analyse.available <= 0:
             return
         
         current = tick.lastPrice
         
-        if current > analyse.minSellPrice and analyse.available > 0:
+        if current > analyse.minSellPrice:
             contract = self.getContract(analyse.vtSymbol)
             if not contract:
                 self.writeLog(u'%s合约查找失败，无法卖出' %analyse.vtSymbol)
-            orderValume = self.roundValue2(analyse.available, contract.amountPrecision)
-            if orderValume >= 1:
-                self.sell(analyse.vtSymbol, current, orderValume)
-                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,current,orderValume))
-                analyse.available = 0
-            else:
-                self.writeLog(u'%s合约持有数量小于1,限价单无法卖出' %analyse.vtSymbol)
+            orderVolume = self.roundValue(analyse.positionVolume, contract.size)
+            if orderVolume > 0:
+                #挂单卖一
+                price = max(current, tick.bidPrice1)
+                self.sell(analyse.vtSymbol, price, orderVolume)
+                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,price,orderVolume))
                 analyse.available = 0
     #----------------------------------------------------------------------
     def onTrade(self, trade):
