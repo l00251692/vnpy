@@ -544,6 +544,7 @@ class HuobiTradeApi(TradeApi):
             contract.priceTick = 1 / pow(10, d['price-precision'])
             contract.amountPrecision = d['amount-precision']
             contract.size = 1 / pow(10, d['amount-precision'])
+            contract.partition = d['symbol-partition'])
             contract.productClass = PRODUCT_SPOT
 
             self.gateway.onContract(contract)

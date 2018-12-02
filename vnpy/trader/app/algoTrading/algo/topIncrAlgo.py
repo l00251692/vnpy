@@ -28,7 +28,8 @@ class TopIncrAlgo(AlgoTemplate):
         
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.quoteCurrency = str(setting['quoteCurrency']).upper()            # 基础币种
-        self.orderVolume = float(setting['orderVolume'])    # 委托数量
+        self.monitorCurrency = str(setting['monitorCurrency']).upper()       
+        self.orderVolume = float(setting['orderVolume'])    # 委托每个交易对买入最多数量
         self.inPer = float(setting['inPer'])/100  # 统计周期,在此周期内判断均价，用于判断增长速率，是否急剧拉升
         self.inStopPer = float(setting['inStopPer'])/100  # 委托买入条件，增长百分比
         self.outPer = float(setting['outPer'])/100  # 委托卖出条件，达到条件就卖出
@@ -36,26 +37,59 @@ class TopIncrAlgo(AlgoTemplate):
         
         self.writeLog(u'算法启动...请耐心等待')
         
-        #根据条件查找要监控的合约
-        contracts = self.getAllContracts()
-        if not contracts:
-            self.writeLog(u'%s查询合约失败，无法获得合约列表' %(algo.algoName)) 
-            return
+        if self.monitorCurrency.strip()=='':
         
-        
-        for tmp in contracts:
-            baseCurrency,quoteCurrency = tmp.name.split('/')
-            #计价币种相同就加入监控
-            if quoteCurrency == self.quoteCurrency: 
-                #排除过期的火币
-                if baseCurrency == 'VEN' or baseCurrency == 'CDC': 
+            #根据条件查找要监控的合约
+            contracts = self.getAllContracts()
+            if not contracts:
+                self.writeLog(u'%s查询合约失败，无法获得合约列表' %(algo.algoName)) 
+                return
+                      
+            for tmp in contracts:
+                baseCurrency,quoteCurrency = tmp.name.split('/')
+                #计价币种相同就加入监控
+                if quoteCurrency == self.quoteCurrency: 
+                    #排除过期的火币
+                    if baseCurrency == 'VEN' or baseCurrency == 'CDC': 
+                        continue
+                    analyse =VtAnalyseData()
+                    analyse.symbol = tmp.symbol
+                    analyse.vtSymbol = tmp.vtSymbol
+                    analyse.exchange = tmp.exchange
+                    analyse.priceTick = tmp.priceTick
+                    analyse.size = tmp.size
+                    analyse.partition = tmp.partition
+                    analyse.count = 0
+                    analyse.basePrice = 0
+                    analyse.increaseCount = 0
+                    analyse.buyAverPrice = 0.0
+                    analyse.lastPrice  = 0.0
+                    analyse.buyVolume = 0.0
+                    analyse.positionVolume = 0.0
+                    analyse.offset = OFFSET_OPEN
+                    self.analyseDict[tmp.vtSymbol] = analyse
+                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                    #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
+                    #self.analyseDict[tmp.vtSymbol] = detector
+                    self.subscribe(tmp.vtSymbol)
+                else:
+                    pass   
+        else:
+            array = self.monitorCurrency.split(',')
+            for currency in array:
+                symbol = currency.lower() + self.quoteCurrency.lower()
+                vtSymbol = '.'.join([symbol, 'HUOBI'])               
+                contract = self.getContract(vtSymbol)
+                if not contract:
+                    self.writeLog(u'%s合约查找失败，无法卖出' %vtSymbol)
                     continue
                 analyse =VtAnalyseData()
-                analyse.symbol = tmp.symbol
-                analyse.vtSymbol = tmp.vtSymbol
-                analyse.exchange = tmp.exchange
-                analyse.priceTick = tmp.priceTick
-                analyse.size = tmp.size
+                analyse.symbol = contract.symbol
+                analyse.vtSymbol = contract.vtSymbol
+                analyse.exchange = contract.exchange
+                analyse.priceTick = contract.priceTick
+                analyse.size = contract.size
+                analyse.partition = contract.partition
                 analyse.count = 0
                 analyse.basePrice = 0
                 analyse.increaseCount = 0
@@ -64,13 +98,10 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.buyVolume = 0.0
                 analyse.positionVolume = 0.0
                 analyse.offset = OFFSET_OPEN
-                self.analyseDict[tmp.vtSymbol] = analyse
-                self.getKLineHistory(tmp.vtSymbol, '1day', 5)
-                #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
-                #self.analyseDict[tmp.vtSymbol] = detector
-                self.subscribe(tmp.vtSymbol)
-            else:
-                pass   
+                self.analyseDict[contract.vtSymbol] = analyse
+                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+                self.subscribe(contract.vtSymbol)
+                   
         self.timer = TaskTimer()
         self.timer.join_task(self.taskTimer, [], timing=0)
         self.timer.start()
@@ -112,23 +143,26 @@ class TopIncrAlgo(AlgoTemplate):
             analyse.increaseCount += 1        
             if increase > self.inPer and increase < self.inStopPer:
             #buy
-                if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN:
-                    orderVolume = self.roundValue(self.orderVolume - analyse.buyVolume, analyse.size)
-                    if orderVolume > 0:
-                        #对于价格过高的，因账户资金问题先按照最低购入量买
-                        if current > 5:
-                            orderVolume = analyse.size
-                            analyse.buyVolume = self.orderVolume
-                        else:
-                            analyse.buyVolume  = analyse.buyVolume + orderVolume
-                        #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
-                        price = min(current, tick.askPrice1)
-                        #self.buy(vtSymbol, price, orderVolume) 
-                        self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,orderVolume))
-                        analyse.lastPrice = current
-                        #增加到监控列表里才能监听到订单的成交信息
-                        self.addSymbolsMonitor('HUOBI',analyse.symbol)
-                        return
+                if analyse.increaseCount > 4 and analyse.offset == OFFSET_OPEN:
+                    if analyse.partition == 'main':
+                        orderVolume = self.roundValue(self.orderVolume - analyse.buyVolume, analyse.size)
+                        if orderVolume > 0:
+                            #对于价格过高的，因账户资金问题先按照最低购入量买
+                            if current > 5:
+                                orderVolume = analyse.size
+                                analyse.buyVolume = self.orderVolume
+                            else:
+                                analyse.buyVolume  = analyse.buyVolume + orderVolume
+                            #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
+                            price = min(current, tick.askPrice1)
+                            #self.buy(vtSymbol, price, orderVolume) 
+                            self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,orderVolume))
+                            analyse.lastPrice = current
+                            #增加到监控列表里才能监听到订单的成交信息
+                            self.addSymbolsMonitor('HUOBI',analyse.symbol)
+                            return
+                    else:
+                        self.writeLog(u'%s合约非主板，交易区为:%s,暂时不买入' %(vtSymbol,analyse.partition))
         else:
             #analyse.increaseCount -= 1
             pass
@@ -269,6 +303,7 @@ class TopIncrWidget(AlgoWidget):
         self.spinVolume.setDecimals(1)
         
         self.quoteCurrency = QtWidgets.QLineEdit()
+        self.monitorCurrency = QtWidgets.QLineEdit()
         
         self.inPer = QtWidgets.QDoubleSpinBox()
         self.inPer.setMinimum(0)
@@ -297,16 +332,18 @@ class TopIncrWidget(AlgoWidget):
         #grid.addWidget(self.lineSymbol, 0, 1)
         grid.addWidget(Label(u'计价币种'), 0, 0)
         grid.addWidget(self.quoteCurrency, 0, 1)
-        grid.addWidget(Label(u'委托数量'), 1, 0)
-        grid.addWidget(self.spinVolume, 1, 1)    
-        grid.addWidget(Label(u'开始买入(%)'), 2, 0)
-        grid.addWidget(self.inPer, 2, 1)
-        grid.addWidget(Label(u'最高买入(%)'), 3, 0)
-        grid.addWidget(self.inStopPer, 3, 1)
-        grid.addWidget(Label(u'卖出条件(%)'), 4, 0)
-        grid.addWidget(self.outPer, 4, 1)
-        grid.addWidget(Label(u'观察时间(秒)'), 5, 0)
-        grid.addWidget(self.waitTime, 5, 1)
+        grid.addWidget(Label(u'监控币种(可选)'), 1, 0)
+        grid.addWidget(self.monitorCurrency, 1, 1)
+        grid.addWidget(Label(u'交易对币值'), 2, 0)
+        grid.addWidget(self.spinVolume, 2, 1)    
+        grid.addWidget(Label(u'开始买入(%)'), 3, 0)
+        grid.addWidget(self.inPer, 3, 1)
+        grid.addWidget(Label(u'最高买入(%)'), 4, 0)
+        grid.addWidget(self.inStopPer, 4, 1)
+        grid.addWidget(Label(u'卖出条件(%)'), 5, 0)
+        grid.addWidget(self.outPer, 5, 1)
+        grid.addWidget(Label(u'观察时间(秒)'), 6, 0)
+        grid.addWidget(self.waitTime, 6, 1)
         
         return grid
     
@@ -316,6 +353,7 @@ class TopIncrWidget(AlgoWidget):
         setting = OrderedDict()
         setting['templateName'] = TopIncrAlgo.templateName
         setting['quoteCurrency'] = str(self.quoteCurrency.text())
+        setting['monitorCurrency'] = str(self.monitorCurrency.text())
         setting['orderVolume'] = float(self.spinVolume.value())
         setting['inPer'] = float(self.inPer.text())
         setting['inStopPer'] = float(self.inStopPer.text())

@@ -395,6 +395,7 @@ class VtContractData(VtBaseData):
         self.productClass = EMPTY_UNICODE       # 合约类型
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
+        self.partition = EMPTY_STRING           # 交易区
         
         # 期权相关
         self.strikePrice = EMPTY_FLOAT          # 期权行权价
@@ -460,7 +461,7 @@ class VtAnalyseData(object):
         self.symbol = EMPTY_STRING      # 代码
         self.exchange = EMPTY_STRING    # 交易所
         
-        self.amountPrecision = EMPTY_INT        # 合约数量精度
+        self.partition = EMPTY_STRING    # 交易板区
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
         self.baseList = []              # VtBaseData列表
