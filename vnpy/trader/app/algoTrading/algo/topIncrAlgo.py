@@ -48,7 +48,7 @@ class TopIncrAlgo(AlgoTemplate):
             #计价币种相同就加入监控
             if quoteCurrency == self.quoteCurrency: 
                 #排除过期的火币
-                if baseCurrency == 'VEN': 
+                if baseCurrency == 'VEN' or baseCurrency == 'CDC': 
                     continue
                 analyse =VtAnalyseData()
                 analyse.symbol = tmp.symbol
@@ -71,15 +71,15 @@ class TopIncrAlgo(AlgoTemplate):
                 self.subscribe(tmp.vtSymbol)
             else:
                 pass   
-        #self.timer = TaskTimer()
-        #self.timer.join_task(self.taskTimer, [], timing=0)
-        #self.timer.start()
+        self.timer = TaskTimer()
+        self.timer.join_task(self.taskTimer, [], timing=0)
+        self.timer.start()
         self.paramEvent()
         self.varEvent()
     
     #----------------------------------------------------------------------
     def taskTimer(self):
-        self.writeLog(u'定时任务执行,获取最新的交易价格%s') 
+        self.writeLog(u'定时任务执行,获取最新的交易价格') 
         for key,analyse in self.analyseDict.items():
             self.getKLineHistory(analyse.vtSymbol, '1day', 5) 
     
@@ -101,15 +101,7 @@ class TopIncrAlgo(AlgoTemplate):
         
         if (current <= base):
             #decline ,add pubishment mechanisms
-            #TODO:CPU性能提升后就不需要此处理
-            if analyse.positionVolume > 0:
-                analyse.increaseCount -= 1
-            else:
-                analyse.increaseCount -= 1
-                if analyse.increaseCount == -100:
-                    #持续下跌今天就不再监控，此时为了减少CPU压力
-                    self.unsubscribe(vtSymbol)
-                    self.delSymbolsMonitor('HUOBI',analyse.symbol)
+            analyse.increaseCount -= 1
             return
        
         increase = (current - base)/base
@@ -120,8 +112,6 @@ class TopIncrAlgo(AlgoTemplate):
             analyse.increaseCount += 1        
             if increase > self.inPer and increase < self.inStopPer:
             #buy
-                print('onTick:%s,current=%s,pre=%s' %(vtSymbol,current,analyse.lastPrice))
-
                 if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN:
                     orderVolume = self.roundValue(self.orderVolume - analyse.buyVolume, analyse.size)
                     if orderVolume > 0:
@@ -133,7 +123,7 @@ class TopIncrAlgo(AlgoTemplate):
                             analyse.buyVolume  = analyse.buyVolume + orderVolume
                         #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
                         price = min(current, tick.askPrice1)
-                        self.buy(vtSymbol, price, orderVolume) 
+                        #self.buy(vtSymbol, price, orderVolume) 
                         self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,orderVolume))
                         analyse.lastPrice = current
                         #增加到监控列表里才能监听到订单的成交信息
