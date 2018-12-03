@@ -100,6 +100,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.offset = OFFSET_OPEN
                 self.analyseDict[contract.vtSymbol] = analyse
                 self.getKLineHistory(contract.vtSymbol, '1day', 5)
+                self.writeLog(u'%s合约进行监控' %vtSymbol)
                 self.subscribe(contract.vtSymbol)
                    
         self.timer = TaskTimer()
@@ -143,7 +144,7 @@ class TopIncrAlgo(AlgoTemplate):
             analyse.increaseCount += 1        
             if increase > self.inPer and increase < self.inStopPer:
             #buy
-                if analyse.increaseCount > 4 and analyse.offset == OFFSET_OPEN:
+                if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN:
                     if analyse.partition == 'main':
                         orderVolume = self.roundValue(self.orderVolume - analyse.buyVolume, analyse.size)
                         if orderVolume > 0:
@@ -155,7 +156,7 @@ class TopIncrAlgo(AlgoTemplate):
                                 analyse.buyVolume  = analyse.buyVolume + orderVolume
                             #测试注掉实际买入改为虚拟买入，在这里设置持仓，实际因该在订单成交是设置
                             price = min(current, tick.askPrice1)
-                            #self.buy(vtSymbol, price, orderVolume) 
+                            #self.buy(vtSymbol, price, orderVolume)
                             self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,orderVolume))
                             analyse.lastPrice = current
                             #增加到监控列表里才能监听到订单的成交信息

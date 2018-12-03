@@ -111,7 +111,6 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def processHistoryEvent(self, event):
         """K线历史记录事件"""
-        print ('processHistoryEvent:')
         history = event.dict_['data']
         
         for algo in self.algoDict.values():

@@ -132,9 +132,9 @@ class HuobiGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryInfo(self):
         """查询委托、成交、持仓"""
-        self.tradeApi.qryOrder()
+        #self.tradeApi.qryOrder()
         self.tradeApi.qryTrade()
-        self.tradeApi.qryPosition()
+        #self.tradeApi.qryPosition()
 
     #----------------------------------------------------------------------
     def close(self):
@@ -152,7 +152,7 @@ class HuobiGateway(VtGateway):
             self.qryFunctionList = [self.qryInfo]
 
             self.qryCount = 0           # 查询触发倒计时
-            self.qryTrigger = 1         # 查询触发点
+            self.qryTrigger = 10         # 查询触发点
             self.qryNextFunction = 0    # 上次运行的查询函数索引
 
             self.startQuery()
@@ -544,7 +544,7 @@ class HuobiTradeApi(TradeApi):
             contract.priceTick = 1 / pow(10, d['price-precision'])
             contract.amountPrecision = d['amount-precision']
             contract.size = 1 / pow(10, d['amount-precision'])
-            contract.partition = d['symbol-partition'])
+            contract.partition = d['symbol-partition']
             contract.productClass = PRODUCT_SPOT
 
             self.gateway.onContract(contract)
@@ -770,7 +770,6 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetKLineHistory(self, data, reqid, ch):
         """查询KLine History"""
-        print ('onGetKLineHistory:')
         symbol = ch.split('.')[1]
         history = VtHistoryData()
         history.symbol = symbol
