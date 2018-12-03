@@ -29,7 +29,7 @@ class TopIncrAlgo(AlgoTemplate):
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.quoteCurrency = str(setting['quoteCurrency']).upper()            # 基础币种
         self.monitorCurrency = str(setting['monitorCurrency']).upper()       
-        self.orderVolume = float(setting['orderVolume'])    # 委托每个交易对买入最多数量
+        self.orderFee = float(setting['orderFee'])    # 委托每个交易对买入最多数量
         self.inPer = float(setting['inPer'])/100  # 统计周期,在此周期内判断均价，用于判断增长速率，是否急剧拉升
         self.inStopPer = float(setting['inStopPer'])/100  # 委托买入条件，增长百分比
         self.outPer = float(setting['outPer'])/100  # 委托卖出条件，达到条件就卖出
@@ -272,7 +272,7 @@ class TopIncrAlgo(AlgoTemplate):
         """更新参数"""
         d = OrderedDict()
         d[u'计价币种'] = self.quoteCurrency
-        d[u'委托数量'] = self.orderVolume
+        d[u'交易对币值'] = self.orderFee
         d[u'开始买入'] = self.inPer
         d[u'最高买入'] = self.inStopPer 
         d[u'卖出条件'] = self.outPer
@@ -334,7 +334,7 @@ class TopIncrWidget(AlgoWidget):
         grid.addWidget(Label(u'监控币种(可选)'), 1, 0)
         grid.addWidget(self.monitorCurrency, 1, 1)
         grid.addWidget(Label(u'交易对币值'), 2, 0)
-        grid.addWidget(self.spinVolume, 2, 1)    
+        grid.addWidget(self.orderFee, 2, 1)    
         grid.addWidget(Label(u'开始买入(%)'), 3, 0)
         grid.addWidget(self.inPer, 3, 1)
         grid.addWidget(Label(u'最高买入(%)'), 4, 0)
@@ -353,7 +353,7 @@ class TopIncrWidget(AlgoWidget):
         setting['templateName'] = TopIncrAlgo.templateName
         setting['quoteCurrency'] = str(self.quoteCurrency.text())
         setting['monitorCurrency'] = str(self.monitorCurrency.text())
-        setting['orderVolume'] = float(self.spinVolume.value())
+        setting['orderFee'] = float(self.orderFee.value())
         setting['inPer'] = float(self.inPer.text())
         setting['inStopPer'] = float(self.inStopPer.text())
         setting['outPer'] = float(self.outPer.text())
