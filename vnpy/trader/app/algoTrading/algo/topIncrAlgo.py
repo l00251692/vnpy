@@ -64,7 +64,7 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.increaseCount = 0
                     analyse.buyAverPrice = 0.0
                     analyse.lastPrice  = 0.0
-                    analyse.buyVolume = 0.0
+                    analyse.buyFee = 0.0
                     analyse.positionVolume = 0.0
                     analyse.offset = OFFSET_OPEN
                     self.analyseDict[tmp.vtSymbol] = analyse
@@ -104,7 +104,7 @@ class TopIncrAlgo(AlgoTemplate):
                 self.subscribe(contract.vtSymbol)
                    
         self.timer = TaskTimer()
-        self.timer.join_task(self.taskTimer, [], timing=0)
+        self.timer.join_task(self.taskTimer, [], timing=23.2)
         self.timer.start()
         self.paramEvent()
         self.varEvent()
@@ -148,9 +148,9 @@ class TopIncrAlgo(AlgoTemplate):
                     price = min(current, tick.askPrice1)
                     #按照买入价格计算可以买入的数量
                     volume = self.roundValue((self.orderFee - analyse.buyFee)/price, analyse.size)
-                    if count > 0:
+                    if volume > 0:
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
-                        #self.buy(vtSymbol, price, count)
+                        #self.buy(vtSymbol, price, volume)
                         self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,volume))
                         analyse.offset == OFFSET_CLOSE
                         analyse.lastPrice = current
@@ -159,8 +159,6 @@ class TopIncrAlgo(AlgoTemplate):
                         return
                     else:
                         self.writeLog(u'%s合约买入余额不足，买入价格:%s,不执行买入' %(vtSymbol,price))
-            else:
-                analyse.increaseCount -= 1
             
         analyse.lastPrice = current
                 
@@ -296,10 +294,9 @@ class TopIncrWidget(AlgoWidget):
         """"""
         self.lineSymbol = QtWidgets.QLineEdit()
         
-        self.spinVolume = QtWidgets.QDoubleSpinBox()
-        self.spinVolume.setMinimum(0.1)
-        self.spinVolume.setMaximum(1000000000)
-        self.spinVolume.setDecimals(1)
+        self.orderFee = QtWidgets.QDoubleSpinBox()
+        self.orderFee.setMaximum(1000)
+        self.orderFee.setDecimals(8)
         
         self.quoteCurrency = QtWidgets.QLineEdit()
         self.monitorCurrency = QtWidgets.QLineEdit()
