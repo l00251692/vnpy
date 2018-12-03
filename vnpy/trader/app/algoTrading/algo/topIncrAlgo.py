@@ -104,7 +104,7 @@ class TopIncrAlgo(AlgoTemplate):
                 self.subscribe(contract.vtSymbol)
                    
         self.timer = TaskTimer()
-        self.timer.join_task(self.taskTimer, [], timing=23.2)
+        self.timer.join_task(self.taskTimer, [], timing=0)
         self.timer.start()
         self.paramEvent()
         self.varEvent()
@@ -152,12 +152,13 @@ class TopIncrAlgo(AlgoTemplate):
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
                         #self.buy(vtSymbol, price, volume)
                         self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,volume))
-                        analyse.offset == OFFSET_CLOSE
+                        analyse.offset = OFFSET_CLOSE
                         analyse.lastPrice = current
                         #增加到监控列表里才能监听到订单的成交信息
                         self.addSymbolsMonitor('HUOBI',analyse.symbol)
                         return
                     else:
+                        analyse.offset = OFFSET_CLOSE
                         self.writeLog(u'%s合约买入余额不足，买入价格:%s,不执行买入' %(vtSymbol,price))
             
         analyse.lastPrice = current
