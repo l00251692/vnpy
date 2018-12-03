@@ -469,7 +469,7 @@ class VtAnalyseData(object):
         self.lastPrice = EMPTY_FLOAT 
         self.increaseCount = EMPTY_INT       #buy conditation count
         self.buyAverPrice = EMPTY_FLOAT #buy averange price
-        self.buyVolume = EMPTY_FLOAT #buy volume
+        self.buyFee = EMPTY_FLOAT #buy fee
         self.count = EMPTY_INT       #timer count
         
         self.tradeList = []             #order history
