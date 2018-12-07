@@ -221,6 +221,8 @@ class TopIncrAlgo(AlgoTemplate):
         
         analyse.baseList = history.barList
         analyse.basePrice = history.barList[0]['open']
+        analyse.increaseCount = 0
+        
     #----------------------------------------------------------------------
     def onTimer(self):
         """"""
