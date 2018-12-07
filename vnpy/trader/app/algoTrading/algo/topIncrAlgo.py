@@ -163,7 +163,7 @@ class TopIncrAlgo(AlgoTemplate):
             
         analyse.lastPrice = current
                 
-        if analyse.buyAverPrice > 0 and (current - analyse.buyAverPrice)/analyse.buyAverPrice > self.outPer:
+        if analyse.buyAverPrice > 0 and (current - analyse.buyAverPrice)/analyse.buyAverPrice > self.outPer and  analyse.offset != OFFSET_UNKNOWN:
             #sell
             volume = self.roundValue(analyse.positionVolume, analyse.size)
             price = max(current, tick.askPrice1 - analyse.priceTick)
@@ -171,6 +171,9 @@ class TopIncrAlgo(AlgoTemplate):
                 self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
                 self.sell(vtSymbol, price, volume)
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
+            
+            #设置要等待卖出后再继续卖出，否则会导致不断卖出，超过持有量
+            analyse.offset = OFFSET_UNKNOWN
         
     #----------------------------------------------------------------------
     def onTrade(self, trade):
