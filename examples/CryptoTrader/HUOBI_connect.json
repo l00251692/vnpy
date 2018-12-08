@@ -1,6 +1,6 @@
 {
 	"exchange": "huobi",
-	"accessKey": "8d824237-84d6d2f1-60859aa5-05262",
-	"secretKey": "31d911c7-0c28b49b-8691da70-30fe1",
+	"accessKey": "037f3302-1ac741c1-e5301454-9997d",
+	"secretKey": "4699ed0e-d055318a-06551d7e-a5376",
 	"symbols": ["btcusdt","ethusdt","ethbtc"]
 }
