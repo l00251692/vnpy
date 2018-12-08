@@ -473,6 +473,7 @@ class VtAnalyseData(object):
         self.count = EMPTY_INT       #timer count
         
         self.tradeList = []             #order history
+        self.orderId = EMPTY_INT            #orderId buy
         self.positionVolume = EMPTY_FLOAT #position volume
         self.offset = EMPTY_UNICODE  #开仓平仓状态
         

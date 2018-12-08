@@ -80,14 +80,12 @@ class AutoTradeAlgo(AlgoTemplate):
                             if analyse.calculateVolume + (volume -fees) > analyse.available:
                                 analyse.minSellPrice = analyse.buyAverPrice * (1 + self.outPer)
                                 self.subscribe(analyse.vtSymbol)
-                                self.addSymbolsMonitor('HUOBI',analyse.symbol)
                                 break;
                             elif analyse.calculateVolume + (volume -fees) == analyse.available:
                                 analyse.calculateVolume += (volume - fees)
                                 analyse.buyAverPrice = (analyse.buyAverPrice + price * volume)/analyse.calculateVolume                                
                                 analyse.minSellPrice = analyse.buyAverPrice * (1 + self.outPer)
                                 self.subscribe(analyse.vtSymbol)
-                                self.addSymbolsMonitor('HUOBI',analyse.symbol)
                                 break;
                             
                             analyse.calculateVolume += (volume - fees)
@@ -130,7 +128,7 @@ class AutoTradeAlgo(AlgoTemplate):
                 #挂单卖一
                 price = max(current, tick.bidPrice1)
                 self.sell(analyse.vtSymbol, price, orderVolume)
-                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,price,orderVolume))
+                self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s,minPrice=%s' %(analyse.vtSymbol,price,orderVolume,analyse.minSellPrice))
                 analyse.available = 0
     #----------------------------------------------------------------------
     def onTrade(self, trade):

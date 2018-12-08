@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from datetime import datetime, timedelta
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
-                                    OFFSET_OPEN, OFFSET_CLOSE)
+                                    OFFSET_OPEN, OFFSET_CLOSE, OFFSET_UNKNOWN)
 from vnpy.trader.uiQt import QtWidgets
 from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
 from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
@@ -67,6 +67,7 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.buyFee = 0.0
                     analyse.positionVolume = 0.0
                     analyse.offset = OFFSET_OPEN
+                    analyse.orderId = 0
                     self.analyseDict[tmp.vtSymbol] = analyse
                     self.getKLineHistory(tmp.vtSymbol, '1day', 5)
                     #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
@@ -98,6 +99,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.buyFee = 0.0
                 analyse.positionVolume = 0.0
                 analyse.offset = OFFSET_OPEN
+                analyse.orderId = 0
                 self.analyseDict[contract.vtSymbol] = analyse
                 self.getKLineHistory(contract.vtSymbol, '1day', 5)
                 self.writeLog(u'%s合约进行监控' %vtSymbol)
@@ -150,7 +152,7 @@ class TopIncrAlgo(AlgoTemplate):
                     volume = self.roundValue((self.orderFee - analyse.buyFee)/price, analyse.size)
                     if volume > 0:
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
-                        self.buy(vtSymbol, price, volume)
+                        analyse.orderId = self.buy(vtSymbol, price, volume)
                         self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,volume))
                         analyse.offset = OFFSET_CLOSE
                         analyse.lastPrice = current
@@ -252,7 +254,9 @@ class TopIncrAlgo(AlgoTemplate):
                             self.sell(analyse.vtSymbol, newPrice, volume)
                             self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,volume)) 
             else:
-                pass
+                if analyse.count == self.waitTime and analyse.orderId:
+                    self.cancelOrder(analyse.orderId)
+                    analyse.orderId = 0
 
     
     #----------------------------------------------------------------------
