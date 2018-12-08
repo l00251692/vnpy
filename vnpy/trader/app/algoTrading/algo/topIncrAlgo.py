@@ -330,7 +330,7 @@ class TopIncrWidget(AlgoWidget):
         
         self.waitTime = QtWidgets.QSpinBox()
         self.waitTime.setMinimum(1)
-        self.waitTime.setMaximum(3600)  
+        self.waitTime.setMaximum(36000)  
         self.waitTime.setValue(600)
   
         Label = QtWidgets.QLabel
