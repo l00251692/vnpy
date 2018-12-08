@@ -204,8 +204,10 @@ class TopIncrAlgo(AlgoTemplate):
                 self.writeLog(u'%s合约卖出收益%s个基本货币.' %(vtSymbol, (0-analyse.buyFee)))
                 analyse.buyFee = 0
             
-            analyse.increaseCount = 0
-            analyse.offset = OFFSET_OPEN
+            #持仓比小于一定数量才继续开放买入
+            if (analyse.buyAverPrice * analyse.positionVolume / self.orderFee < 0.05):
+                analyse.increaseCount = 0
+                analyse.offset = OFFSET_OPEN
      
         analyse.tradeList.append(trade.tradeID)
     
@@ -245,7 +247,7 @@ class TopIncrAlgo(AlgoTemplate):
                             self.sell(analyse.vtSymbol, tick.bidPrice1, volume)
                             self.writeLog(u'%s达到设置等待时间，微量上涨，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,tick.bidPrice1,volume))
                     else:
-                        #否则就挂单，可能长期卖不出去
+                        #否则就挂单，可能长期卖不出去，手续费是0.002
                         price = analyse.buyAverPrice * (1 + 0.005)
                         newPrice = self.roundValue(price, analyse.priceTick)
                         volume = self.roundValue(analyse.positionVolume, analyse.size)
