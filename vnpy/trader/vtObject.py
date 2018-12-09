@@ -471,6 +471,7 @@ class VtAnalyseData(object):
         self.buyAverPrice = EMPTY_FLOAT #buy averange price
         self.buyFee = EMPTY_FLOAT #buy fee
         self.count = EMPTY_INT       #timer count
+        self.flag = EMPTY_INT        #标记位,0 init,1 today_close_buy
         
         self.tradeList = []             #order history
         self.orderId = EMPTY_INT            #orderId buy

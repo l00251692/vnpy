@@ -68,6 +68,7 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.positionVolume = 0.0
                     analyse.offset = OFFSET_OPEN
                     analyse.orderId = 0
+                    analyse.flag = 0
                     self.analyseDict[tmp.vtSymbol] = analyse
                     self.getKLineHistory(tmp.vtSymbol, '1day', 5)
                     #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
@@ -100,6 +101,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.positionVolume = 0.0
                 analyse.offset = OFFSET_OPEN
                 analyse.orderId = 0
+                analyse.flag = 0
                 self.analyseDict[contract.vtSymbol] = analyse
                 self.getKLineHistory(contract.vtSymbol, '1day', 5)
                 self.writeLog(u'%s合约进行监控' %vtSymbol)
@@ -146,7 +148,7 @@ class TopIncrAlgo(AlgoTemplate):
             if current > analyse.lastPrice:      
                 analyse.increaseCount += 1  
                 #buy
-                if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN: 
+                if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN and analyse.flag != 1: 
                     price = min(current, tick.askPrice1)
                     #按照买入价格计算可以买入的数量
                     volume = self.roundValue((self.orderFee - analyse.buyFee)/price, analyse.size)
@@ -174,6 +176,7 @@ class TopIncrAlgo(AlgoTemplate):
                 self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
                 self.sell(vtSymbol, price, volume)
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
+                analyse.flag = 1  #今天不再买入
             
             #设置要等待卖出后再继续卖出，否则会导致不断卖出，超过持有量
             analyse.offset = OFFSET_UNKNOWN
@@ -230,6 +233,7 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.baseList = history.barList
         analyse.basePrice = history.barList[0]['open']
         analyse.increaseCount = 0
+        analyse.flag = 0
         
     #----------------------------------------------------------------------
     def onTimer(self):
