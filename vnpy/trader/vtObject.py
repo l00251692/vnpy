@@ -461,6 +461,12 @@ class VtAnalyseData(object):
         self.symbol = EMPTY_STRING      # 代码
         self.exchange = EMPTY_STRING    # 交易所
         
+        self.orderFee = EMPTY_FLOAT    # 委托每个交易对买入最多数量
+        self.inPer = EMPTY_FLOAT  # 统计周期,在此周期内判断均价，用于判断增长速率，是否急剧拉升
+        self.inStopPer = EMPTY_FLOAT  # 委托买入条件，增长百分比
+        self.outPer = EMPTY_FLOAT  # 委托卖出条件，达到条件就卖出
+        self.waitTime = EMPTY_INT  # 委托买入后等待成交时间，没有成交到时间后取消订单
+        
         self.partition = EMPTY_STRING    # 交易板区
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
