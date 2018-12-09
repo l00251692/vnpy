@@ -152,6 +152,7 @@ class TopIncrAlgo(AlgoTemplate):
                     volume = self.roundValue((self.orderFee - analyse.buyFee)/price, analyse.size)
                     if volume > 0:
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
+                        analyse.count = 0
                         analyse.orderId = self.buy(vtSymbol, price, volume)
                         self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,volume))
                         analyse.offset = OFFSET_CLOSE
