@@ -303,6 +303,7 @@ class TopIncrAlgo(AlgoTemplate):
         if trade.direction == DIRECTION_LONG:
             analyse.buyAverPrice = (analyse.buyAverPrice * analyse.positionVolume + trade.volume * trade.price)/(analyse.positionVolume + trade.volume - trade.filledFees)
             analyse.positionVolume = analyse.positionVolume + trade.volume - trade.filledFees
+            self.writeLog(u'%s合约买入成功,成交数量:%s,成交价格:%s.' %(vtSymbol, trade.volume, trade.price))
         else:
             if analyse.positionVolume == trade.volume:
                 analyse.count = 0
@@ -351,6 +352,10 @@ class TopIncrAlgo(AlgoTemplate):
             if analyse.positionVolume > 0:
                 analyse.count += 1
                 if analyse.count == analyse.waitTime:
+                    #如果已经委托卖出，则不再继续卖出
+                    if analyse.offset == OFFSET_UNKNOWN:
+                        return
+                    
                     analyse.offset = OFFSET_CLOSE
                     #超时后还有持仓,此时如果买一价比平均价高则委托卖出，最多亏损手续费
                     tick = self.getTick(analyse.vtSymbol)
