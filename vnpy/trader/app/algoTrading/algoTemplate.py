@@ -238,6 +238,16 @@ class AlgoTemplate(object):
     def putParamEvent(self, d):
         """更新参数"""
         self.engine.putParamEvent(self, d)
+	
+    #----------------------------------------------------------------------
+    def saveTopIncrData(self, data):
+	""""""
+	self.engine.saveTopIncrData(data)
+	
+    #----------------------------------------------------------------------
+    def loadTopIncrData(self, key):
+	""""""
+	self.engine.loadTopIncrData(key)
     
     #----------------------------------------------------------------------
     def writeLog(self, content):

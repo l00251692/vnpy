@@ -1,4 +1,5 @@
 # encoding: UTF-8
+import time
 
 from __future__ import division
 from collections import OrderedDict
@@ -215,7 +216,22 @@ class TopIncrAlgo(AlgoTemplate):
                 self.writeLog(u'%s合约进行监控' %vtSymbol)
                 self.subscribe(contract.vtSymbol)
         
-                   
+        #读取今天成交情况初始化
+        l = self.loadTopIncrData(time.strftime('%Y.%m.%d',time.localtime(time.time())))
+        if l and l['data']:
+            for key,item in l['data'].items():
+                if self.analyseDict[item.vtSymbol]: 
+                    self.analyseDict[item.vtSymbol].count = item.count
+                    self.analyseDict[item.vtSymbol].basePrice = item.basePrice
+                    self.analyseDict[item.vtSymbol].increaseCount = item.increaseCount
+                    self.analyseDict[item.vtSymbol].buyAverPrice = item.buyAverPrice
+                    self.analyseDict[item.vtSymbol].lastPrice  = item.lastPrice
+                    self.analyseDict[item.vtSymbol].buyFee = item.buyFee
+                    self.analyseDict[item.vtSymbol].positionVolume = item.positionVolume
+                    self.analyseDict[item.vtSymbol].offset = item.offset
+                    self.analyseDict[item.vtSymbol].orderId = item.orderId
+                    self.analyseDict[item.vtSymbol].flag = item.flag                 
+                       
         self.timer = TaskTimer()
         self.timer.join_task(self.taskTimer, [], timing=0.000001)
         self.timer.start()
@@ -385,6 +401,12 @@ class TopIncrAlgo(AlgoTemplate):
         """"""
         if self.timer:
             self.timer.stop()
+        
+        orderInfo = OrderedDict()
+        orderInfo['data'] = self.analyseDict
+        orderInfo['settingName'] = TopIncrAlgo.templateName
+        orderInfo['time'] = time.strftime('%Y.%m.%d',time.localtime(time.time()))
+        self.saveTopIncrData(orderInfo)        
         
         self.writeLog(u'停止算法')
         self.varEvent()

@@ -353,7 +353,27 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def qryTradeSync(self, symbool, gatewayName):
         """"""
-        return  self.mainEngine.qryTradeSync(symbool,gatewayName)    
+        return  self.mainEngine.qryTradeSync(symbool,gatewayName)  
+    
+    #----------------------------------------------------------------------
+
+    def saveTopIncrData(self, data):
+        """"""
+        time = data['time']
+
+        self.mainEngine.dbUpdate('VnTrader_AlgoTrading_Db', 
+                                 'TopIncrData' ,
+                                 data,
+                                 {'time': time},
+                                 True)
+    #----------------------------------------------------------------------
+    def loadTopIncrData(self, key):
+        """"""
+        l = self.mainEngine.dbQuery('VnTrader_AlgoTrading_Db',
+                                    'TopIncrData',
+                                    {'time': key},
+                                    )
+        return l
     
     #----------------------------------------------------------------------
 	
