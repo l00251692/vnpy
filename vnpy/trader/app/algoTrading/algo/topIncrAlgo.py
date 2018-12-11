@@ -1,5 +1,4 @@
 # encoding: UTF-8
-import time
 
 from __future__ import division
 from collections import OrderedDict
@@ -219,7 +218,8 @@ class TopIncrAlgo(AlgoTemplate):
         #读取今天成交情况初始化
         l = self.loadTopIncrData(time.strftime('%Y.%m.%d',time.localtime(time.time())))
         if l and l['data']:
-            for key,item in l['data'].items():
+            tmpdict = json.loads(l['data'])
+            for key,item in tmpdict.items():
                 if self.analyseDict[item.vtSymbol]: 
                     self.analyseDict[item.vtSymbol].count = item.count
                     self.analyseDict[item.vtSymbol].basePrice = item.basePrice
@@ -403,7 +403,7 @@ class TopIncrAlgo(AlgoTemplate):
             self.timer.stop()
         
         orderInfo = OrderedDict()
-        orderInfo['data'] = self.analyseDict
+        orderInfo['data'] =  json.dumps(self.analyseDict)
         orderInfo['settingName'] = TopIncrAlgo.templateName
         orderInfo['time'] = time.strftime('%Y.%m.%d',time.localtime(time.time()))
         self.saveTopIncrData(orderInfo)        
