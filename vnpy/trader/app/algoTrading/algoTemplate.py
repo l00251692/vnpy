@@ -215,19 +215,18 @@ class AlgoTemplate(object):
 	"""修改为四舍五不入"""
         if not change:
             return value
-	
-	#round(3,0)=3.0作为数量给火币会报错,需要返回3
-	if change > 0:
-	    return value/change
         
         n = value / change
         v = round(n, 0) * change
 	
 	if v > value:
-	    return (v - change)
-	else:
-	    return v  
-    
+	    v = v - change
+	
+	#round(3,0)=3.0作为数量给火币会报错,需要返回3
+	if change >= 1:
+	    v = int(v)
+
+	return v	 
     #----------------------------------------------------------------------
     def putVarEvent(self, d):
         """更新变量"""
