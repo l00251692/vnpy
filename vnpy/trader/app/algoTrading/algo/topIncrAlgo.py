@@ -236,6 +236,7 @@ class TopIncrAlgo(AlgoTemplate):
                     self.analyseDict[item.vtSymbol].lastPrice  = item.lastPrice
                     self.analyseDict[item.vtSymbol].buyFee = item.buyFee
                     self.analyseDict[item.vtSymbol].positionVolume = item.positionVolume
+                    self.analyseDict[item.vtSymbol].lastSellPrice  = item.lastSellPrice
                     self.analyseDict[item.vtSymbol].offset = item.offset
                     self.analyseDict[item.vtSymbol].orderId = item.orderId
                     self.analyseDict[item.vtSymbol].flag = item.flag
@@ -343,7 +344,7 @@ class TopIncrAlgo(AlgoTemplate):
             analyse.lastSellPrice = trade.price  
             analyse.positionVolume = analyse.positionVolume - trade.volume
             analyse.buyFee = analyse.buyFee - (self.roundValue((trade.volume * trade.price),0.00000001) - trade.filledFees)
-            
+            self.writeLog(u'%s合约卖出成功,成交数量:%s,成交价格:%s.' %(vtSymbol, trade.volume, trade.price))
             if analyse.buyFee < 0:#卖出已经大于收入,归零
                 self.writeLog(u'%s合约卖出收益%s个基本货币.' %(vtSymbol, (0-analyse.buyFee)))
                 analyse.buyFee = 0
@@ -372,6 +373,7 @@ class TopIncrAlgo(AlgoTemplate):
         
         analyse.baseList = history.barList
         analyse.basePrice = history.barList[0]['open']
+        analyse.lastSellPrice = 0.0
         analyse.increaseCount = 0
         analyse.flag = 0
         
