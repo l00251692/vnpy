@@ -83,6 +83,7 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.lastPrice  = 0.0
                     analyse.buyFee = 0.0
                     analyse.positionVolume = 0.0
+                    analyse.lastSellPrice = 0.0
                     analyse.offset = OFFSET_OPEN
                     analyse.orderId = 0
                     analyse.flag = 0
@@ -123,6 +124,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.lastPrice  = 0.0
                 analyse.buyFee = 0.0
                 analyse.positionVolume = 0.0
+                analyse.lastSellPrice = 0.0
                 analyse.offset = OFFSET_OPEN
                 analyse.orderId = 0
                 analyse.flag = 0
@@ -169,6 +171,7 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.lastPrice  = 0.0
                     analyse.buyFee = 0.0
                     analyse.positionVolume = 0.0
+                    analyse.lastSellPrice = 0.0
                     analyse.offset = OFFSET_OPEN
                     analyse.orderId = 0
                     analyse.flag = 0
@@ -209,6 +212,7 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.lastPrice  = 0.0
                 analyse.buyFee = 0.0
                 analyse.positionVolume = 0.0
+                analyse.lastSellPrice = 0.0
                 analyse.offset = OFFSET_OPEN
                 analyse.orderId = 0
                 analyse.flag = 0
@@ -281,6 +285,10 @@ class TopIncrAlgo(AlgoTemplate):
                 if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN and analyse.flag != 1: 
                     price = min(current, tick.askPrice1)
                     #按照买入价格计算可以买入的数量
+                    if  analyse.lastSellPrice > 0 and price > analyse.lastSellPrice - analyse.priceTick * 10:
+                        self.writeLog(u'%s合约价格下降小,不买入,预计价格:%s,上次买入价格:%s' %(vtSymbol,price,analyse.lastSellPrice))
+                        return
+                    
                     volume = self.roundValue((analyse.orderFee - analyse.buyFee)/price, analyse.size)
                     if volume > 0:
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
@@ -331,7 +339,8 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.buyAverPrice = 0
             else:
                 analyse.buyAverPrice = (analyse.buyAverPrice * analyse.positionVolume - trade.volume * trade.price)/(analyse.positionVolume - trade.volume) 
-                
+            
+            analyse.lastSellPrice = trade.price  
             analyse.positionVolume = analyse.positionVolume - trade.volume
             analyse.buyFee = analyse.buyFee - (self.roundValue((trade.volume * trade.price),0.00000001) - trade.filledFees)
             

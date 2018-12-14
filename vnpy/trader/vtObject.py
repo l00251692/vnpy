@@ -470,12 +470,14 @@ class VtAnalyseData(object):
         self.partition = EMPTY_STRING    # 交易板区
         self.size = EMPTY_INT                   # 合约大小
         self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
+        
         self.baseList = []              # VtBaseData列表
         self.basePrice = EMPTY_FLOAT 
         self.lastPrice = EMPTY_FLOAT 
         self.increaseCount = EMPTY_INT       #buy conditation count
         self.buyAverPrice = EMPTY_FLOAT #buy averange price
         self.buyFee = EMPTY_FLOAT #buy fee
+        self.lastSellPrice = EMPTY_FLOAT
         self.count = EMPTY_INT       #timer count
         self.flag = EMPTY_INT        #标记位,0 init,1 today_close_buy
         
