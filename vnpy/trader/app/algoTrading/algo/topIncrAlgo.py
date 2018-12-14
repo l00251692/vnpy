@@ -240,6 +240,7 @@ class TopIncrAlgo(AlgoTemplate):
                     self.analyseDict[item.vtSymbol].offset = item.offset
                     self.analyseDict[item.vtSymbol].orderId = item.orderId
                     self.analyseDict[item.vtSymbol].flag = item.flag
+            self.writeLog(u'读取上次买卖记录成功')
         f.close()
                                               
         self.timer = TaskTimer()
