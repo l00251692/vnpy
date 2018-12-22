@@ -7,7 +7,7 @@ import time
 from collections import OrderedDict
 
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
-                                    OFFSET_OPEN, OFFSET_CLOSE, OFFSET_UNKNOWN)
+                                    OFFSET_OPEN, OFFSET_CLOSE, OFFSET_UNKNOWN, EXCHANGE_HUOBI, EXCHANGE_BINANCE)
 from vnpy.trader.uiQt import QtWidgets
 from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
 from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
@@ -198,10 +198,14 @@ class TopIncrAlgo(AlgoTemplate):
             timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
             starttime = int(time.mktime(timeArray)) 
             
-            b = datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+            b = datetime.now().strftime("%Y-%m-%d")+" 10:00:00"
             timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
-            endtime = int(time.mktime(timeArray))                         
-            self.getKLineHistory(contract.vtSymbol, '1h', 1, starttime, endtime)
+            endtime = int(time.mktime(timeArray))   
+            
+            if starttime < time.time():
+                starttime = starttime - 24 * 60 * 60
+                endtime = endtime - 24 * 60 * 60
+            self.getKLineHistory(contract.vtSymbol, '1h', 2, starttime, endtime)
 
         self.subscribe(contract.vtSymbol)        
             
