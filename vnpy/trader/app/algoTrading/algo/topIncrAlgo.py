@@ -2,10 +2,10 @@
 
 from __future__ import division
 import shelve
+from datetime import datetime
 import time
 from collections import OrderedDict
 
-from datetime import datetime, timedelta
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE, OFFSET_UNKNOWN)
 from vnpy.trader.uiQt import QtWidgets
@@ -194,11 +194,11 @@ class TopIncrAlgo(AlgoTemplate):
         if contract.exchange == EXCHANGE_HUOBI:
             self.getKLineHistory(contract.vtSymbol, '1day', 5)
         elif contract.exchange == EXCHANGE_BINANCE:
-            a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
+            a = datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
             timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
             starttime = int(time.mktime(timeArray)) 
             
-            b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+            b = datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
             timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
             endtime = int(time.mktime(timeArray))                         
             self.getKLineHistory(contract.vtSymbol, '1h', 1, starttime, endtime)

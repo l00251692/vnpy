@@ -142,7 +142,7 @@ class AlgoTemplate(object):
     #----------------------------------------------------------------------
     def commitSubscribe(self, gatewayName):
 	""""""
-	self.engine.commitSubscribe(self, gatewayName)	
+	self.engine.commitSubscribe(gatewayName)	
 	
     #----------------------------------------------------------------------
     def addSymbolsMonitor(self, gatewayName, symbol):

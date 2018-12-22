@@ -178,6 +178,11 @@ class BinanceGateway(VtGateway):
                 history.barList.append(d)
                 
             self.gateway.onHistory(history) 
+            
+    #----------------------------------------------------------------------
+    def commitSubscribe(self):
+        """"""
+        self.api.commitSubscribe()
 
 
 ########################################################################

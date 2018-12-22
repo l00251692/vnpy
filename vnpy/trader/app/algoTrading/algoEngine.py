@@ -168,7 +168,7 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def commitSubscribe(self, gatewayName):
         """"""
-        self.mainEngine.commitSubscribe(self, gatewayName)            
+        self.mainEngine.commitSubscribe(gatewayName)            
             
     #----------------------------------------------------------------------
     def unsubscribe(self, algo, vtSymbol):
