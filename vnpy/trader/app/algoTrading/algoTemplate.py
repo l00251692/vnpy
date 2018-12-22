@@ -140,6 +140,11 @@ class AlgoTemplate(object):
         self.engine.subscribe(self, vtSymbol)
 	
     #----------------------------------------------------------------------
+    def commitSubscribe(self, gatewayName):
+	""""""
+	self.engine.commitSubscribe(self, gatewayName)	
+	
+    #----------------------------------------------------------------------
     def addSymbolsMonitor(self, gatewayName, symbol):
 	""""""
 	self.engine.addSymbolsMonitor(gatewayName, symbol)	
@@ -195,9 +200,9 @@ class AlgoTemplate(object):
         return self.engine.getAllContracts(self)
 	
     #----------------------------------------------------------------------
-    def getKLineHistory(self, vtSymbol, period, size):
+    def getKLineHistory(self, vtSymbol, period, size, startTime = 0, endTime = 0):
 	"""查询K线回调"""
-	return self.engine.getKLineHistory(vtSymbol, period, size)
+	return self.engine.getKLineHistory(vtSymbol, period, size, startTime, endTime)
     
     #----------------------------------------------------------------------
     def qryPositionSync(self, gatewayName):

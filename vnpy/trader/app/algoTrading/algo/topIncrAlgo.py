@@ -2,6 +2,7 @@
 
 from __future__ import division
 import shelve
+import time
 from collections import OrderedDict
 
 from datetime import datetime, timedelta
@@ -88,7 +89,17 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.orderId = 0
                     analyse.flag = 0
                     self.analyseDict[tmp.vtSymbol] = analyse
-                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                    if tmp.exchange == EXCHANGE_HUOBI:
+                        self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                    elif tmp.exchange == EXCHANGE_BINANCE:
+                        a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
+                        timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
+                        starttime = int(time.mktime(timeArray)) 
+                        
+                        b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+                        timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
+                        endtime = int(time.mktime(timeArray))                         
+                        self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
                     #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
                     #self.analyseDict[tmp.vtSymbol] = detector
                     self.subscribe(tmp.vtSymbol)
@@ -129,7 +140,18 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.orderId = 0
                 analyse.flag = 0
                 self.analyseDict[contract.vtSymbol] = analyse
-                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+                if tmp.exchange == EXCHANGE_HUOBI:
+                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                elif tmp.exchange == EXCHANGE_BINANCE:
+                    a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
+                    timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
+                    starttime = int(time.mktime(timeArray)) 
+                    
+                    b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+                    timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
+                    endtime = int(time.mktime(timeArray))                         
+                    self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
+                    
                 self.writeLog(u'%s合约进行监控' %vtSymbol)
                 self.subscribe(contract.vtSymbol)
                 
@@ -176,7 +198,18 @@ class TopIncrAlgo(AlgoTemplate):
                     analyse.orderId = 0
                     analyse.flag = 0
                     self.analyseDict[tmp.vtSymbol] = analyse
-                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                    
+                    if tmp.exchange == EXCHANGE_HUOBI:
+                        self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                    elif tmp.exchange == EXCHANGE_BINANCE:
+                        a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
+                        timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
+                        starttime = int(time.mktime(timeArray)) 
+                        
+                        b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+                        timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
+                        endtime = int(time.mktime(timeArray))                         
+                        self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
                     #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
                     #self.analyseDict[tmp.vtSymbol] = detector
                     self.subscribe(tmp.vtSymbol)
@@ -217,7 +250,18 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.orderId = 0
                 analyse.flag = 0
                 self.analyseDict[contract.vtSymbol] = analyse
-                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+                if tmp.exchange == EXCHANGE_HUOBI:
+                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
+                elif tmp.exchange == EXCHANGE_BINANCE:
+                    a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
+                    timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
+                    starttime = int(time.mktime(timeArray)) 
+                    
+                    b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+                    timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
+                    endtime = int(time.mktime(timeArray))                         
+                    self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
+    
                 self.writeLog(u'%s合约进行监控' %vtSymbol)
                 self.subscribe(contract.vtSymbol)
         
@@ -242,7 +286,10 @@ class TopIncrAlgo(AlgoTemplate):
                     self.analyseDict[item.vtSymbol].flag = item.flag
             self.writeLog(u'读取上次买卖记录成功')
         f.close()
-                                              
+        
+        #对于币安，按照列表统一订阅，此时需要发起订阅websocket数据
+        self.commitSubscribe('BINANCE')
+        
         self.timer = TaskTimer()
         self.timer.join_task(self.taskTimer, [], timing=0.000001)
         self.timer.start()

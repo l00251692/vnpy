@@ -98,7 +98,7 @@ class HuobiGateway(VtGateway):
         self.dataApi.unsubscribe(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
-    def getKLineHistory(self, symbol, period, size):
+    def getKLineHistory(self, symbol, period, size, startTime = 0, endTime = 0):
         self.tradeApi.getKLineHistory( symbol, period, size)
         
     #----------------------------------------------------------------------
@@ -542,7 +542,6 @@ class HuobiTradeApi(TradeApi):
 
             contract.name = '/'.join([d['base-currency'].upper(), d['quote-currency'].upper()])
             contract.priceTick = 1 / pow(10, d['price-precision'])
-            contract.amountPrecision = d['amount-precision']
             contract.size = 1 / pow(10, d['amount-precision'])
             contract.partition = d['symbol-partition']
             contract.productClass = PRODUCT_SPOT

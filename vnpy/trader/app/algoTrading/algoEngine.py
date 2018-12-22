@@ -166,6 +166,11 @@ class AlgoEngine(object):
             self.mainEngine.subscribe(req, contract.gatewayName)
             
     #----------------------------------------------------------------------
+    def commitSubscribe(self, gatewayName):
+        """"""
+        self.mainEngine.commitSubscribe(self, gatewayName)            
+            
+    #----------------------------------------------------------------------
     def unsubscribe(self, algo, vtSymbol):
         """"""
         contract = self.mainEngine.getContract(vtSymbol)
@@ -336,14 +341,14 @@ class AlgoEngine(object):
         return  self.mainEngine.getAllContracts()
     
     #----------------------------------------------------------------------
-    def getKLineHistory(self, vtSymbol, period, size):
+    def getKLineHistory(self, vtSymbol, period, size, startTime, endTime):
         """查询KLine History"""
         contract = self.mainEngine.getContract(vtSymbol)
         if not contract:
             self.writeLog(u'%s查询合约失败，Get Kline Fail.：%s' %(algo.algoName, vtSymbol))
             return
         
-        return  self.mainEngine.getKLineHistory(contract.symbol, period, size, contract.gatewayName)
+        return  self.mainEngine.getKLineHistory(contract.symbol, period, size, startTime, endTime, contract.gatewayName)
     
     #----------------------------------------------------------------------
     def qryPositionSync(self, gatewayName):

@@ -247,6 +247,28 @@ class BinanceApi(object):
         return self.addReq('GET', path, params, self.onQueryKlines)  
     
     #----------------------------------------------------------------------
+    def getKLineHistory(self, symbol, interval, limit=0, startTime=0, endTime=0):
+        """"""
+        path = '/api/v1/klines'
+        
+        params = {
+            'symbol': symbol,
+            'interval': interval
+        }   
+            
+        if limit:
+            params['limit'] = limit        
+        if startTime:
+            params['startTime'] = startTime
+        if endTime:
+            params['endTime'] = endTime
+            
+        signed=False
+        stream=False
+             
+        return self.request('GET', path, params, signed, stream)   
+    
+    #----------------------------------------------------------------------
     def queryTicker24HR(self, symbol=''):
         """"""
         path = '/api/v1/ticker/24hr'

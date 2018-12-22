@@ -126,6 +126,14 @@ class MainEngine(object):
             gateway.subscribe(subscribeReq)
             
     #----------------------------------------------------------------------
+    def commitSubscribe(self, gatewayName):
+        """"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            gateway.commitSubscribe()          
+            
+    #----------------------------------------------------------------------
     def unsubscribe(self, subscribeReq, gatewayName):
         """取消订阅特定接口的行情"""
         gateway = self.getGateway(gatewayName)
@@ -190,12 +198,12 @@ class MainEngine(object):
             gateway.qryPosition()
      
     #----------------------------------------------------------------------
-    def getKLineHistory(self,symbol, period, size, gatewayName):
+    def getKLineHistory(self,symbol, period, size, startTime, endTime, gatewayName):
         """查询K线历史数据"""
         gateway = self.getGateway(gatewayName)
         
         if gateway:
-            gateway.getKLineHistory(symbol, period, size)  
+            gateway.getKLineHistory(symbol, period, size, startTime, endTime)  
             
     #----------------------------------------------------------------------
     def qryPositionSync(self, gatewayName):

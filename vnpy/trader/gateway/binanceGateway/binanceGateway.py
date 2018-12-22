@@ -98,8 +98,8 @@ class BinanceGateway(VtGateway):
 
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
-        """订阅行情"""
-        pass
+        """将symbol加入监控列表"""
+        self.api.subscribe(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -161,6 +161,23 @@ class BinanceGateway(VtGateway):
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""
         self.qryEnabled = qryEnabled
+        
+    #----------------------------------------------------------------------
+    def getKLineHistory(self, symbol, interval, limit=0, startTime=0, endTime=0):
+        #https://github.com/sammchardy/python-binance/blob/master/binance/client.py
+        result, data = self.api.getKLineHistory( symbol, interval, limit, startTime, endTime)
+        
+        if data:
+            history = VtHistoryData()
+            history.symbol = symbol
+            history.exchange = EXCHANGE_BINANCE
+            history.vtSymbol = '.'.join([history.symbol, history.exchange])  
+            history.queryID = 0  # 查询号
+            
+            for d in data:
+                history.barList.append(d)
+                
+            self.gateway.onHistory(history) 
 
 
 ########################################################################
@@ -179,6 +196,7 @@ class GatewayApi(BinanceApi):
         self.orderId = 0
 
         self.tickDict = {}
+        self.subscribeArr = []
 
     #----------------------------------------------------------------------
     def connect(self, apiKey, secretKey, symbols):
@@ -187,23 +205,30 @@ class GatewayApi(BinanceApi):
         self.start()
         self.writeLog(u'交易API启动成功')
         
-        l = []
-        for symbol in symbols:
-            symbol = symbol.lower()
-            l.append(symbol+'@ticker')
-            l.append(symbol+'@depth5')
-        self.initDataStream(l)
-        self.writeLog(u'行情推送订阅成功')
-        
-        self.startStream()
-        
         # 初始化查询
-        self.queryExchangeInfo()
-        self.queryAccount()
+        #self.queryExchangeInfo()
+        #self.queryAccount()
         
-        for symbol in symbols:
-            self.queryOpenOrders(symbol.upper())
+        #for symbol in symbols:
+            #self.queryOpenOrders(symbol.upper())
 
+    #----------------------------------------------------------------------
+    def subscribe(self, symbol):
+        symbol = symbol.lower()
+        tmp = symbol+'@ticker'
+        if tmp in self.subscribeArr:
+            #tick = self.subscribeDict[symbol]
+            pass
+        else:
+            self.subscribeArr.append(symbol+'@ticker')
+            self.subscribeArr.append(symbol+'@depth5')
+                     
+    #----------------------------------------------------------------------
+    def commitSubscribe(self):            
+        self.initDataStream(self.subscribeArr)
+        self.writeLog(u'行情推送订阅成功')
+        self.startStream()   
+        
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
@@ -234,6 +259,7 @@ class GatewayApi(BinanceApi):
             contract.name = contract.vtSymbol
             contract.productClass = PRODUCT_SPOT
             contract.size = 1
+            contract.partition = 'MAIN'
             
             for f in d['filters']:
                 if f['filterType'] == 'PRICE_FILTER':
@@ -295,7 +321,7 @@ class GatewayApi(BinanceApi):
             account.available = free
             
             self.gateway.onAccount(account)
-        
+            
     #----------------------------------------------------------------------
     def onQueryMyTrades(self, data, reqid):
         """"""
@@ -306,7 +332,7 @@ class GatewayApi(BinanceApi):
         """"""
         key = data['listenKey']
         self.initUserStream(key)
-        self.writeLog(u'交易推送订阅成功')
+        self.writeLog(u'个人交易推送订阅成功')
     
     #----------------------------------------------------------------------
     def onKeepaliveStream(self, data, reqid):
