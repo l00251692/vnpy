@@ -206,8 +206,8 @@ class GatewayApi(BinanceApi):
         self.writeLog(u'交易API启动成功')
         
         # 初始化查询
-        #self.queryExchangeInfo()
-        #self.queryAccount()
+        self.queryExchangeInfo()
+        self.queryAccount()
         
         #for symbol in symbols:
             #self.queryOpenOrders(symbol.upper())
@@ -254,6 +254,8 @@ class GatewayApi(BinanceApi):
             contract.gatewayName = self.gatewayName
             
             contract.symbol = d['symbol']
+            contract.base = d['baseAsset']
+            contract.quote = d['quoteAsset']
             contract.exchange = EXCHANGE_BINANCE
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
             contract.name = contract.vtSymbol

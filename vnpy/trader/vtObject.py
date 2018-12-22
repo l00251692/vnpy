@@ -390,6 +390,8 @@ class VtContractData(VtBaseData):
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所代码
         self.vtSymbol = EMPTY_STRING            # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
+        self.base = EMPTY_STRING              # 代码
+        self.quote = EMPTY_STRING              # 代码
         self.name = EMPTY_UNICODE               # 合约中文名
         
         self.productClass = EMPTY_UNICODE       # 合约类型

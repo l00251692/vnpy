@@ -38,7 +38,7 @@ class TopIncrAlgo(AlgoTemplate):
         self.outPer = float(setting['outPer'])/100  # 委托卖出条件，达到条件就卖出
         self.waitTime = int(setting['waitTime'])  # 委托买入后等待成交时间，没有成交到时间后取消订单
         
-        self.quoteCurrency2 = str(setting['quoteCurrency2']).upper()            # 基础币种
+        self.quoteCurrency2 = str(setting['quoteCurrency2']).upper()            # 计价货币
         self.monitorCurrency2 = str(setting['monitorCurrency2']).upper()       
         self.orderFee2 = float(setting['orderFee2'])    # 委托每个交易对买入最多数量
         self.inPer2 = float(setting['inPer2'])/100  # 统计周期,在此周期内判断均价，用于判断增长速率，是否急剧拉升
@@ -53,107 +53,36 @@ class TopIncrAlgo(AlgoTemplate):
             #根据条件查找要监控的合约
             contracts = self.getAllContracts()
             if not contracts:
-                self.writeLog(u'%s查询合约失败，无法获得合约列表' %(algo.algoName)) 
+                self.writeLog(u'查询合约失败，无法获得合约列表') 
                 return
                       
-            for tmp in contracts:
-                baseCurrency,quoteCurrency = tmp.name.split('/')
+            for contract in contracts:
                 #计价币种相同就加入监控
-                if quoteCurrency == self.quoteCurrency: 
+                if contract.quote.upper() == self.quoteCurrency: 
                     #排除过期的火币
-                    if baseCurrency == 'VEN' or baseCurrency == 'CDC': 
+                    if contract.base.upper() == 'VEN' or contract.base.upper() == 'CDC': 
                         continue
-                    analyse =VtAnalyseData()
-                    analyse.symbol = tmp.symbol
-                    analyse.vtSymbol = tmp.vtSymbol
-                    analyse.exchange = tmp.exchange
-                    analyse.priceTick = tmp.priceTick
-                    analyse.size = tmp.size
-                    analyse.partition = tmp.partition
-                    
-                    analyse.orderFee = self.orderFee    
-                    analyse.inPer = self.inPer 
-                    analyse.inStopPer = self.inStopPer
-                    analyse.outPer = self.outPer
-                    analyse.waitTime = self.waitTime             
-                    
-                    analyse.count = 0
-                    analyse.basePrice = 0
-                    analyse.increaseCount = 0
-                    analyse.buyAverPrice = 0.0
-                    analyse.lastPrice  = 0.0
-                    analyse.buyFee = 0.0
-                    analyse.positionVolume = 0.0
-                    analyse.lastSellPrice = 0.0
-                    analyse.offset = OFFSET_OPEN
-                    analyse.orderId = 0
-                    analyse.flag = 0
-                    self.analyseDict[tmp.vtSymbol] = analyse
-                    if tmp.exchange == EXCHANGE_HUOBI:
-                        self.getKLineHistory(tmp.vtSymbol, '1day', 5)
-                    elif tmp.exchange == EXCHANGE_BINANCE:
-                        a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
-                        timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
-                        starttime = int(time.mktime(timeArray)) 
-                        
-                        b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
-                        timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
-                        endtime = int(time.mktime(timeArray))                         
-                        self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
-                    #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
-                    #self.analyseDict[tmp.vtSymbol] = detector
-                    self.subscribe(tmp.vtSymbol)
+                    self.addAnalyzeDict(contract, 1)
                 else:
                     pass   
         else:
             array = self.monitorCurrency.split(',')
             for currency in array:
                 symbol = currency.lower() + self.quoteCurrency.lower()
-                vtSymbol = '.'.join([symbol, 'HUOBI'])               
+                vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
                 contract = self.getContract(vtSymbol)
                 if not contract:
-                    self.writeLog(u'%s合约查找失败，无法卖出' %vtSymbol)
-                    continue
-                analyse =VtAnalyseData()
-                analyse.symbol = contract.symbol
-                analyse.vtSymbol = contract.vtSymbol
-                analyse.exchange = contract.exchange
-                analyse.priceTick = contract.priceTick
-                analyse.size = contract.size
-                analyse.partition = contract.partition
+                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
+                else:
+                    self.addAnalyzeDict(contract, 1) 
                 
-                analyse.orderFee = self.orderFee    
-                analyse.inPer = self.inPer 
-                analyse.inStopPer = self.inStopPer
-                analyse.outPer = self.outPer
-                analyse.waitTime = self.waitTime
-                
-                analyse.count = 0
-                analyse.basePrice = 0
-                analyse.increaseCount = 0
-                analyse.buyAverPrice = 0.0
-                analyse.lastPrice  = 0.0
-                analyse.buyFee = 0.0
-                analyse.positionVolume = 0.0
-                analyse.lastSellPrice = 0.0
-                analyse.offset = OFFSET_OPEN
-                analyse.orderId = 0
-                analyse.flag = 0
-                self.analyseDict[contract.vtSymbol] = analyse
-                if tmp.exchange == EXCHANGE_HUOBI:
-                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
-                elif tmp.exchange == EXCHANGE_BINANCE:
-                    a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
-                    timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
-                    starttime = int(time.mktime(timeArray)) 
-                    
-                    b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
-                    timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
-                    endtime = int(time.mktime(timeArray))                         
-                    self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
-                    
-                self.writeLog(u'%s合约进行监控' %vtSymbol)
-                self.subscribe(contract.vtSymbol)
+                symbol = currency.upper() + self.quoteCurrency.upper()
+                vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
+                contract = self.getContract(vtSymbol)
+                if not contract:
+                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
+                else:
+                    self.addAnalyzeDict(contract, 1) 
                 
                 
         #增加第二个监控币种
@@ -162,108 +91,35 @@ class TopIncrAlgo(AlgoTemplate):
             #根据条件查找要监控的合约
             contracts = self.getAllContracts()
             if not contracts:
-                self.writeLog(u'%s查询合约失败，无法获得合约列表' %(algo.algoName)) 
+                self.writeLog(u'查询合约失败，无法获得合约列表') 
                 return
                       
-            for tmp in contracts:
-                baseCurrency,quoteCurrency = tmp.name.split('/')
-                #计价币种相同就加入监控
-                if quoteCurrency == self.quoteCurrency2: 
+            for contract in contracts:
+                if contract.quote.upper() == self.quoteCurrency2: 
                     #排除过期的火币
-                    if baseCurrency == 'VEN' or baseCurrency == 'CDC': 
+                    if contract.base.upper() == 'VEN' or contract.base.upper() == 'CDC': 
                         continue
-                    analyse =VtAnalyseData()
-                    analyse.symbol = tmp.symbol
-                    analyse.vtSymbol = tmp.vtSymbol
-                    analyse.exchange = tmp.exchange
-                    analyse.priceTick = tmp.priceTick
-                    analyse.size = tmp.size
-                    analyse.partition = tmp.partition
-                    
-                    analyse.orderFee = self.orderFee2    
-                    analyse.inPer = self.inPer2 
-                    analyse.inStopPer = self.inStopPer2
-                    analyse.outPer = self.outPer2
-                    analyse.waitTime = self.waitTime2
-                    
-                    analyse.count = 0
-                    analyse.basePrice = 0
-                    analyse.increaseCount = 0
-                    analyse.buyAverPrice = 0.0
-                    analyse.lastPrice  = 0.0
-                    analyse.buyFee = 0.0
-                    analyse.positionVolume = 0.0
-                    analyse.lastSellPrice = 0.0
-                    analyse.offset = OFFSET_OPEN
-                    analyse.orderId = 0
-                    analyse.flag = 0
-                    self.analyseDict[tmp.vtSymbol] = analyse
-                    
-                    if tmp.exchange == EXCHANGE_HUOBI:
-                        self.getKLineHistory(tmp.vtSymbol, '1day', 5)
-                    elif tmp.exchange == EXCHANGE_BINANCE:
-                        a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
-                        timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
-                        starttime = int(time.mktime(timeArray)) 
-                        
-                        b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
-                        timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
-                        endtime = int(time.mktime(timeArray))                         
-                        self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
-                    #detector = TimeSeriesAnormalyDetector(0.2, 0.5, 0.6, 0.5, 0.5, 5)
-                    #self.analyseDict[tmp.vtSymbol] = detector
-                    self.subscribe(tmp.vtSymbol)
+                    self.addAnalyzeDict(contract, 2)
                 else:
                     pass   
         else:
             array = self.monitorCurrency2.split(',')
             for currency in array:
                 symbol = currency.lower() + self.quoteCurrency2.lower()
-                vtSymbol = '.'.join([symbol, 'HUOBI'])               
+                vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
                 contract = self.getContract(vtSymbol)
                 if not contract:
-                    self.writeLog(u'%s合约查找失败，无法卖出' %vtSymbol)
-                    continue
-                analyse =VtAnalyseData()
-                analyse.symbol = contract.symbol
-                analyse.vtSymbol = contract.vtSymbol
-                analyse.exchange = contract.exchange
-                analyse.priceTick = contract.priceTick
-                analyse.size = contract.size
-                analyse.partition = contract.partition
+                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
+                else:
+                    self.addAnalyzeDict(contract, 2) 
                 
-                analyse.orderFee = self.orderFee2    
-                analyse.inPer = self.inPer2 
-                analyse.inStopPer = self.inStopPer2
-                analyse.outPer = self.outPer2
-                analyse.waitTime = self.waitTime2
-                
-                analyse.count = 0
-                analyse.basePrice = 0
-                analyse.increaseCount = 0
-                analyse.buyAverPrice = 0.0
-                analyse.lastPrice  = 0.0
-                analyse.buyFee = 0.0
-                analyse.positionVolume = 0.0
-                analyse.lastSellPrice = 0.0
-                analyse.offset = OFFSET_OPEN
-                analyse.orderId = 0
-                analyse.flag = 0
-                self.analyseDict[contract.vtSymbol] = analyse
-                if tmp.exchange == EXCHANGE_HUOBI:
-                    self.getKLineHistory(tmp.vtSymbol, '1day', 5)
-                elif tmp.exchange == EXCHANGE_BINANCE:
-                    a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
-                    timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
-                    starttime = int(time.mktime(timeArray)) 
-                    
-                    b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
-                    timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
-                    endtime = int(time.mktime(timeArray))                         
-                    self.getKLineHistory(tmp.vtSymbol, '1h', 1, starttime, endtime)
-    
-                self.writeLog(u'%s合约进行监控' %vtSymbol)
-                self.subscribe(contract.vtSymbol)
+                symbol = currency.upper() + self.quoteCurrency2.upper()
+                vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
+                contract = self.getContract(vtSymbol)
+                if not contract:
+                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
+                else:
+                    self.addAnalyzeDict(contract, 2) 
         
         #读取今天成交情况初始化
         fielName = "analyse_" + time.strftime('%Y-%m-%d',time.localtime(time.time())) + ".vt"
@@ -296,6 +152,59 @@ class TopIncrAlgo(AlgoTemplate):
         self.paramEvent()
         self.varEvent()
     
+    #----------------------------------------------------------------------
+    def addAnalyzeDict(self, contract, flag):
+        
+        analyse =VtAnalyseData()
+        analyse.symbol = contract.symbol
+        analyse.vtSymbol = contract.vtSymbol
+        analyse.exchange = contract.exchange
+        analyse.priceTick = contract.priceTick
+        analyse.size = contract.size
+        analyse.partition = contract.partition
+        
+        if flag == 1:
+            analyse.orderFee = self.orderFee    
+            analyse.inPer = self.inPer 
+            analyse.inStopPer = self.inStopPer
+            analyse.outPer = self.outPer
+            analyse.waitTime = self.waitTime            
+        elif flag == 2:
+            analyse.orderFee = self.orderFee2    
+            analyse.inPer = self.inPer2 
+            analyse.inStopPer = self.inStopPer2
+            analyse.outPer = self.outPer2
+            analyse.waitTime = self.waitTime2  
+        else:
+            self.writeLog(u'初始化分析对象错误')
+        
+        analyse.count = 0
+        analyse.basePrice = 0
+        analyse.increaseCount = 0
+        analyse.buyAverPrice = 0.0
+        analyse.lastPrice  = 0.0
+        analyse.buyFee = 0.0
+        analyse.positionVolume = 0.0
+        analyse.lastSellPrice = 0.0
+        analyse.offset = OFFSET_OPEN
+        analyse.orderId = 0
+        analyse.flag = 0
+        self.analyseDict[contract.vtSymbol] = analyse
+        
+        if contract.exchange == EXCHANGE_HUOBI:
+            self.getKLineHistory(contract.vtSymbol, '1day', 5)
+        elif contract.exchange == EXCHANGE_BINANCE:
+            a = datetime.datetime.now().strftime("%Y-%m-%d")+" 08:00:00"
+            timeArray = time.strptime(a, "%Y-%m-%d %H:%M:%S")
+            starttime = int(time.mktime(timeArray)) 
+            
+            b = datetime.datetime.now().strftime("%Y-%m-%d")+" 09:00:00"
+            timeArray = time.strptime(b, "%Y-%m-%d %H:%M:%S")  
+            endtime = int(time.mktime(timeArray))                         
+            self.getKLineHistory(contract.vtSymbol, '1h', 1, starttime, endtime)
+
+        self.subscribe(contract.vtSymbol)        
+            
     #----------------------------------------------------------------------
     def taskTimer(self):
         self.writeLog(u'定时任务执行,获取最新的交易价格') 

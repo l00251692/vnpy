@@ -537,6 +537,8 @@ class HuobiTradeApi(TradeApi):
             contract.gatewayName = self.gatewayName
 
             contract.symbol = d['base-currency'] + d['quote-currency']
+            contract.base = d['base-currency'] 
+            contract.quote = d['quote-currency']
             contract.exchange = EXCHANGE_HUOBI
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
 
