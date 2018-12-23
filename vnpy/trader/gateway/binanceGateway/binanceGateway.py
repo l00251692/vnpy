@@ -164,20 +164,7 @@ class BinanceGateway(VtGateway):
         
     #----------------------------------------------------------------------
     def getKLineHistory(self, symbol, interval, limit=0, startTime=0, endTime=0):
-        #https://github.com/sammchardy/python-binance/blob/master/binance/client.py
-        result, data = self.api.getKLineHistory( symbol, interval, limit, startTime, endTime)
-        
-        if data:
-            history = VtHistoryData()
-            history.symbol = symbol
-            history.exchange = EXCHANGE_BINANCE
-            history.vtSymbol = '.'.join([history.symbol, history.exchange])  
-            history.queryID = 0  # 查询号
-            
-            for d in data:
-                history.barList.append(d)
-                
-            self.gateway.onHistory(history) 
+        self.api.getKLineHistory(symbol, interval, limit, startTime, endTime)
             
     #----------------------------------------------------------------------
     def commitSubscribe(self):
@@ -232,7 +219,25 @@ class GatewayApi(BinanceApi):
     def commitSubscribe(self):            
         self.initDataStream(self.subscribeArr)
         self.writeLog(u'行情推送订阅成功')
-        self.startStream()   
+        self.startStream()  
+        
+    #----------------------------------------------------------------------
+    def getKLineHistory(self, symbol, interval, limit=0, startTime=0, endTime=0):
+        #https://github.com/sammchardy/python-binance/blob/master/binance/client.py
+        result, data = self.api.getKLineHistory( symbol, interval, limit, startTime, endTime)
+        
+        if data:
+            data.reverse()
+            history = VtHistoryData()
+            history.symbol = symbol
+            history.exchange = EXCHANGE_BINANCE
+            history.vtSymbol = '.'.join([history.symbol, history.exchange])  
+            history.queryID = 0  # 查询号
+            
+            for d in data:
+                history.barList.append(d)
+                
+            self.gateway.onHistory(history) 
         
     #----------------------------------------------------------------------
     def writeLog(self, content):
