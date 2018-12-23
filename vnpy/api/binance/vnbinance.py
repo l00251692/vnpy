@@ -247,7 +247,7 @@ class BinanceApi(object):
         return self.addReq('GET', path, params, self.onQueryKlines)  
     
     #----------------------------------------------------------------------
-    def getKLineHistory(self, symbol, interval, limit=0, startTime=0, endTime=0):
+    def getKLines(self, symbol, interval, limit=0, startTime=0, endTime=0):
         """"""
         path = '/api/v1/klines'
         

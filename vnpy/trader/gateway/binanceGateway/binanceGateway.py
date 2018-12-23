@@ -224,7 +224,7 @@ class GatewayApi(BinanceApi):
     #----------------------------------------------------------------------
     def getKLineHistory(self, symbol, interval, limit=0, startTime=0, endTime=0):
         #https://github.com/sammchardy/python-binance/blob/master/binance/client.py
-        result, data = self.api.getKLineHistory( symbol, interval, limit, startTime, endTime)
+        result, data = self.getKLines( symbol, interval, limit, startTime, endTime)
         
         if data:
             data.reverse()
