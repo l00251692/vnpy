@@ -39,14 +39,17 @@ class TaskTimer:
 
     def cycle_task(self, task):
         """"""
-        if task['next_sec'] <= int(time.time()):
+        if task['next_sec'] > 0 and task['next_sec'] <= int(time.time()):
             try:
                 task['fun'](*task['arg'])
                 self.write_log("Normal","cycle task:" + task['fun'].__name__ + "Done")
             except Exception as e:
                 self.write_log("UnNormal", "cycle task:" + task['fun'].__name__ + "Function inner Exception:" + str(e))
             finally:
-                task['next_sec'] = int(time.time()) + task['interval']
+                if task['cycle'] :
+                    task['next_sec'] = int(time.time()) + task['interval']
+                else:
+                    task['next_sec'] = 0
 
     def timing_task(self, task):
         """"""
@@ -88,7 +91,7 @@ class TaskTimer:
         i = datetime.datetime.now()
         return i.day
 
-    def join_task(self, fun, arg, interval=None, timing=None):
+    def join_task(self, fun, arg, interval=None, intervalCycle=True, timing=None):
         """
         interval,timing, only select one
         :param fun:
@@ -120,6 +123,7 @@ class TaskTimer:
             task['today'] = self.get_today()
         elif interval:
             task['next_sec'] = int(time.time()) + interval
+            task['cycle'] = intervalCycle
 
         self.task_queue.append(task)
 

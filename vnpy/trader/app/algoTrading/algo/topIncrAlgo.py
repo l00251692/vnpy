@@ -146,8 +146,11 @@ class TopIncrAlgo(AlgoTemplate):
         #对于币安，按照列表统一订阅，此时需要发起订阅websocket数据
         self.commitSubscribe('BINANCE')
         
+        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时100s后再获取K线数据
         self.timer = TaskTimer()
-        self.timer.join_task(self.taskTimer, [], timing=0.000001)
+        self.timer.join_task(self.getBasePriceInit, [], interval=100, intervalCycle=False)
+        self.timer.join_task(self.getBasePriceHuobi, [], timing=0.000001)
+        self.timer.join_task(self.getBasePriceBinance, [], timing=8.000001)
         self.timer.start()
         self.paramEvent()
         self.varEvent()
@@ -191,18 +194,30 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.flag = 0
         self.analyseDict[contract.vtSymbol] = analyse
         
-        if contract.exchange == EXCHANGE_HUOBI:
-            self.getKLineHistory(contract.vtSymbol, '1day', 5)
-        elif contract.exchange == EXCHANGE_BINANCE:
-            self.getKLineHistory(contract.vtSymbol, '1d', 5)
-
         self.subscribe(contract.vtSymbol)        
             
     #----------------------------------------------------------------------
-    def taskTimer(self):
-        self.writeLog(u'定时任务执行,获取最新的交易价格') 
+    def getBasePriceInit(self):
+        self.writeLog(u'获取K线基本价格') 
         for key,analyse in self.analyseDict.items():
-            self.getKLineHistory(analyse.vtSymbol, '1day', 5) 
+            if analyse.exchange == EXCHANGE_HUOBI:
+                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+            elif analyse.exchange == EXCHANGE_BINANCE:
+                self.getKLineHistory(contract.vtSymbol, '1d', 5)
+            
+    #----------------------------------------------------------------------
+    def getBasePriceHuobi(self):
+        self.writeLog(u'定时任务执行,火币刷新基线交易价格') 
+        for key,analyse in self.analyseDict.items():
+            if analyse.exchange == EXCHANGE_HUOBI:
+                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+            
+    #----------------------------------------------------------------------
+    def getBasePriceBinance(self):
+        self.writeLog(u'定时任务执行,币安刷新基线交易价格') 
+        for key,analyse in self.analyseDict.items():
+            if analyse.exchange == EXCHANGE_BINANCE:
+                self.getKLineHistory(contract.vtSymbol, '1d', 5)
     
     #----------------------------------------------------------------------
     def onTick(self, tick):
