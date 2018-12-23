@@ -201,23 +201,23 @@ class TopIncrAlgo(AlgoTemplate):
         self.writeLog(u'获取K线基本价格') 
         for key,analyse in self.analyseDict.items():
             if analyse.exchange == EXCHANGE_HUOBI:
-                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+                self.getKLineHistory(analyse.vtSymbol, '1day', 5)
             elif analyse.exchange == EXCHANGE_BINANCE:
-                self.getKLineHistory(contract.vtSymbol, '1d', 5)
+                self.getKLineHistory(analyse.vtSymbol, '1d', 5)
             
     #----------------------------------------------------------------------
     def getBasePriceHuobi(self):
         self.writeLog(u'定时任务执行,火币刷新基线交易价格') 
         for key,analyse in self.analyseDict.items():
             if analyse.exchange == EXCHANGE_HUOBI:
-                self.getKLineHistory(contract.vtSymbol, '1day', 5)
+                self.getKLineHistory(analyse.vtSymbol, '1day', 5)
             
     #----------------------------------------------------------------------
     def getBasePriceBinance(self):
         self.writeLog(u'定时任务执行,币安刷新基线交易价格') 
         for key,analyse in self.analyseDict.items():
             if analyse.exchange == EXCHANGE_BINANCE:
-                self.getKLineHistory(contract.vtSymbol, '1d', 5)
+                self.getKLineHistory(analyse.vtSymbol, '1d', 5)
     
     #----------------------------------------------------------------------
     def onTick(self, tick):
@@ -329,18 +329,25 @@ class TopIncrAlgo(AlgoTemplate):
     #----------------------------------------------------------------------
     def onHistory(self, history):
         """""" 
-        symbol = history.symbol
         vtSymbol = history.vtSymbol
         
         analyse = self.analyseDict[vtSymbol]
         if not analyse:
             return
         
-        analyse.baseList = history.barList
-        analyse.basePrice = history.barList[0]['open']
-        analyse.lastSellPrice = 0.0
-        analyse.increaseCount = 0
-        analyse.flag = 0
+        if history.exchange == EXCHANGE_HUOBI:
+            analyse.baseList = history.barList
+            analyse.basePrice = history.barList[0]['open']
+            analyse.lastSellPrice = 0.0
+            analyse.increaseCount = 0
+            analyse.flag = 0
+        elif history.exchange == EXCHANGE_BINANCE:
+            analyse.baseList = history.barList
+            analyse.basePrice = history.barList[0][1]
+            analyse.lastSellPrice = 0.0
+            analyse.increaseCount = 0
+            analyse.flag = 0
+            self.writeLog(u'%s 当天开盘价为：%s' %(vtSymbol, analyse.basePrice))
         
     #----------------------------------------------------------------------
     def onTimer(self):
