@@ -71,17 +71,13 @@ class TopIncrAlgo(AlgoTemplate):
                 symbol = currency.lower() + self.quoteCurrency.lower()
                 vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
                 contract = self.getContract(vtSymbol)
-                if not contract:
-                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
-                else:
+                if contract:
                     self.addAnalyzeDict(contract, 1) 
                 
                 symbol = currency.upper() + self.quoteCurrency.upper()
                 vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
                 contract = self.getContract(vtSymbol)
-                if not contract:
-                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
-                else:
+                if contract:
                     self.addAnalyzeDict(contract, 1) 
                 
                 
@@ -108,17 +104,13 @@ class TopIncrAlgo(AlgoTemplate):
                 symbol = currency.lower() + self.quoteCurrency2.lower()
                 vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
                 contract = self.getContract(vtSymbol)
-                if not contract:
-                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
-                else:
+                if contract:
                     self.addAnalyzeDict(contract, 2) 
                 
                 symbol = currency.upper() + self.quoteCurrency2.upper()
                 vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
                 contract = self.getContract(vtSymbol)
-                if not contract:
-                    self.writeLog(u'%s没有这个交易对' %vtSymbol)
-                else:
+                if contract:
                     self.addAnalyzeDict(contract, 2) 
         
         #读取今天成交情况初始化
@@ -146,9 +138,9 @@ class TopIncrAlgo(AlgoTemplate):
         #对于币安，按照列表统一订阅，此时需要发起订阅websocket数据
         self.commitSubscribe('BINANCE')
         
-        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时100s后再获取K线数据
+        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时30s后再获取K线数据
         self.timer = TaskTimer()
-        self.timer.join_task(self.getBasePriceInit, [], interval=100, intervalCycle=False)
+        self.timer.join_task(self.getBasePriceInit, [], interval=30, intervalCycle=False)
         self.timer.join_task(self.getBasePriceHuobi, [], timing=0.000001)
         self.timer.join_task(self.getBasePriceBinance, [], timing=8.000001)
         self.timer.start()
@@ -347,8 +339,7 @@ class TopIncrAlgo(AlgoTemplate):
             analyse.lastSellPrice = 0.0
             analyse.increaseCount = 0
             analyse.flag = 0
-            self.writeLog(u'%s 当天开盘价为：%s' %(vtSymbol, analyse.basePrice))
-        
+   
     #----------------------------------------------------------------------
     def onTimer(self):
         """"""
