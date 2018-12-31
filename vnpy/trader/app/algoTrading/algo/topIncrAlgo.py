@@ -82,36 +82,37 @@ class TopIncrAlgo(AlgoTemplate):
                 
                 
         #增加第二个监控币种
-        if self.monitorCurrency2.strip()=='':
-        
-            #根据条件查找要监控的合约
-            contracts = self.getAllContracts()
-            if not contracts:
-                self.writeLog(u'查询合约失败，无法获得合约列表') 
-                return
-                      
-            for contract in contracts:
-                if contract.quote.upper() == self.quoteCurrency2: 
-                    #排除过期的火币
-                    if contract.base.upper() == 'VEN' or contract.base.upper() == 'CDC': 
-                        continue
-                    self.addAnalyzeDict(contract, 2)
-                else:
-                    pass   
-        else:
-            array = self.monitorCurrency2.split(',')
-            for currency in array:
-                symbol = currency.lower() + self.quoteCurrency2.lower()
-                vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
-                contract = self.getContract(vtSymbol)
-                if contract:
-                    self.addAnalyzeDict(contract, 2) 
-                
-                symbol = currency.upper() + self.quoteCurrency2.upper()
-                vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
-                contract = self.getContract(vtSymbol)
-                if contract:
-                    self.addAnalyzeDict(contract, 2) 
+        if self.quoteCurrency2 !='':
+            if self.monitorCurrency2.strip()=='':
+            
+                #根据条件查找要监控的合约
+                contracts = self.getAllContracts()
+                if not contracts:
+                    self.writeLog(u'查询合约失败，无法获得合约列表') 
+                    return
+                          
+                for contract in contracts:
+                    if contract.quote.upper() == self.quoteCurrency2: 
+                        #排除过期的火币
+                        if contract.base.upper() == 'VEN' or contract.base.upper() == 'CDC': 
+                            continue
+                        self.addAnalyzeDict(contract, 2)
+                    else:
+                        pass   
+            else:
+                array = self.monitorCurrency2.split(',')
+                for currency in array:
+                    symbol = currency.lower() + self.quoteCurrency2.lower()
+                    vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
+                    contract = self.getContract(vtSymbol)
+                    if contract:
+                        self.addAnalyzeDict(contract, 2) 
+                    
+                    symbol = currency.upper() + self.quoteCurrency2.upper()
+                    vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
+                    contract = self.getContract(vtSymbol)
+                    if contract:
+                        self.addAnalyzeDict(contract, 2) 
         
         #读取今天成交情况初始化
         fielName = "analyse_" + time.strftime('%Y-%m-%d',time.localtime(time.time())) + ".vt"
