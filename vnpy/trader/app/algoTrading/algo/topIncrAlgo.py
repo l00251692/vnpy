@@ -187,7 +187,8 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.flag = 0
         self.analyseDict[contract.vtSymbol] = analyse
         
-        self.subscribe(contract.vtSymbol)        
+        self.subscribe(contract.vtSymbol)  
+        self.writeLog(u'%s 加入监控对象' %contract.vtSymbol)
             
     #----------------------------------------------------------------------
     def getBasePriceInit(self):
@@ -245,7 +246,6 @@ class TopIncrAlgo(AlgoTemplate):
                     price = min(current, tick.askPrice1)
                     #按照买入价格计算可以买入的数量
                     if  analyse.lastSellPrice > 0 and price > analyse.lastSellPrice - analyse.priceTick * 10:
-                        self.writeLog(u'%s合约价格下降小,不买入,预计价格:%s,上次买入价格:%s' %(vtSymbol,price,analyse.lastSellPrice))
                         return
                     
                     volume = self.roundValue((analyse.orderFee - analyse.buyFee)/price, analyse.size)
