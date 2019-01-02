@@ -257,7 +257,7 @@ class TopIncrAlgo(AlgoTemplate):
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
                         analyse.count = 0
                         analyse.orderId = self.buy(vtSymbol, price, volume)
-                        self.writeLog(u'%s合约买入委托买入，买入价格:%s,买入数量:%s' %(vtSymbol,price,volume))
+                        self.writeLog(u'%s合约买入委托买入,订单ID:%s,买入价格:%s,买入数量:%s' %(vtSymbol, analyse.orderId, price, volume))
                         analyse.offset = OFFSET_CLOSE
                         analyse.lastPrice = current
                         #增加到监控列表里才能监听到订单的成交信息
@@ -376,6 +376,7 @@ class TopIncrAlgo(AlgoTemplate):
                             self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,volume)) 
             else:
                 if analyse.count == analyse.waitTime and analyse.orderId:
+                    self.writeLog(u'订单买入未成功取消买入:订单ID=%s' %(analyse.orderId))
                     self.cancelOrder(analyse.orderId)
                     analyse.orderId = 0
 
