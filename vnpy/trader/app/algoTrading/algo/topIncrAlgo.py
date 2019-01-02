@@ -114,34 +114,13 @@ class TopIncrAlgo(AlgoTemplate):
                     if contract:
                         self.addAnalyzeDict(contract, 2) 
         
-        #读取今天成交情况初始化
-        fielName = "analyse_" + time.strftime('%Y-%m-%d',time.localtime(time.time())) + ".vt"
-        path = getTempPath(fielName)        
-        f = shelve.open(path)
-        if 'data' in f:
-            d = f['data']
-            for key, item in d.items():
-                if self.analyseDict[item.vtSymbol]: 
-                    self.analyseDict[item.vtSymbol].count = item.count
-                    self.analyseDict[item.vtSymbol].basePrice = item.basePrice
-                    self.analyseDict[item.vtSymbol].increaseCount = item.increaseCount
-                    self.analyseDict[item.vtSymbol].buyAverPrice = item.buyAverPrice
-                    self.analyseDict[item.vtSymbol].lastPrice  = item.lastPrice
-                    self.analyseDict[item.vtSymbol].buyFee = item.buyFee
-                    self.analyseDict[item.vtSymbol].positionVolume = item.positionVolume
-                    self.analyseDict[item.vtSymbol].lastSellPrice  = item.lastSellPrice
-                    self.analyseDict[item.vtSymbol].offset = item.offset
-                    self.analyseDict[item.vtSymbol].orderId = item.orderId
-                    self.analyseDict[item.vtSymbol].flag = item.flag
-            self.writeLog(u'读取上次买卖记录成功')
-        f.close()
-        
         #对于币安，按照列表统一订阅，此时需要发起订阅websocket数据
         self.commitSubscribe('BINANCE')
         
-        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时30s后再获取K线数据
+        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时10s后再获取K线数据
         self.timer = TaskTimer()
-        self.timer.join_task(self.getBasePriceInit, [], interval=30, intervalCycle=False)
+        self.timer.join_task(self.getBasePriceInit, [], interval=15, intervalCycle=False)
+        self.timer.join_task(self.readTodayData, [], interval=30, intervalCycle=False)
         self.timer.join_task(self.getBasePriceHuobi, [], timing=0.000001)
         self.timer.join_task(self.getBasePriceBinance, [], timing=8.000001)
         self.timer.start()
@@ -198,6 +177,31 @@ class TopIncrAlgo(AlgoTemplate):
                 self.getKLineHistory(analyse.vtSymbol, '1day', 5)
             elif analyse.exchange == EXCHANGE_BINANCE:
                 self.getKLineHistory(analyse.vtSymbol, '1d', 5)
+                
+    #----------------------------------------------------------------------
+    def readTodayData(self):
+        #读取今天成交情况初始化
+        fielName = "analyse_" + time.strftime('%Y-%m-%d',time.localtime(time.time())) + ".vt"
+        path = getTempPath(fielName)        
+        f = shelve.open(path)
+        if 'data' in f:
+            self.writeLog(u'重启后重新读取下今天为止运行数据') 
+            d = f['data']
+            for key, item in d.items():
+                if item.vtSymbol in self.analyseDict: 
+                    self.analyseDict[item.vtSymbol].count = item.count
+                    self.analyseDict[item.vtSymbol].basePrice = item.basePrice
+                    self.analyseDict[item.vtSymbol].increaseCount = item.increaseCount
+                    self.analyseDict[item.vtSymbol].buyAverPrice = item.buyAverPrice
+                    self.analyseDict[item.vtSymbol].lastPrice  = item.lastPrice
+                    self.analyseDict[item.vtSymbol].buyFee = item.buyFee
+                    self.analyseDict[item.vtSymbol].positionVolume = item.positionVolume
+                    self.analyseDict[item.vtSymbol].lastSellPrice  = item.lastSellPrice
+                    self.analyseDict[item.vtSymbol].offset = item.offset
+                    self.analyseDict[item.vtSymbol].orderId = item.orderId
+                    self.analyseDict[item.vtSymbol].flag = item.flag
+            self.writeLog(u'读取上次买卖记录成功')
+        f.close()
             
     #----------------------------------------------------------------------
     def getBasePriceHuobi(self):
