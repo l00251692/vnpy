@@ -117,10 +117,10 @@ class TopIncrAlgo(AlgoTemplate):
         #对于币安，按照列表统一订阅，此时需要发起订阅websocket数据
         self.commitSubscribe('BINANCE')
         
-        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时10s后再获取K线数据
+        #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时15s后再获取K线数据;K线数据更新异步，延迟再读取文件历史交易数据避免被覆盖
         self.timer = TaskTimer()
         self.timer.join_task(self.getBasePriceInit, [], interval=15, intervalCycle=False)
-        self.timer.join_task(self.readTodayData, [], interval=30, intervalCycle=False)
+        self.timer.join_task(self.readTodayData, [], interval=25, intervalCycle=False)
         self.timer.join_task(self.getBasePriceHuobi, [], timing=0.000001)
         self.timer.join_task(self.getBasePriceBinance, [], timing=8.000001)
         self.timer.start()
