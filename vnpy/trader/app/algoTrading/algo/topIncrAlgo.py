@@ -301,7 +301,8 @@ class TopIncrAlgo(AlgoTemplate):
                 analyse.count = 0
                 analyse.buyAverPrice = 0
             else:
-                analyse.buyAverPrice = (analyse.buyAverPrice * analyse.positionVolume - trade.volume * trade.price)/(analyse.positionVolume - trade.volume) 
+                #对于部分卖出，持仓均价不变，BUG:计算由于四舍五入会导致均价变小
+                pass
             
             analyse.lastSellPrice = trade.price  
             analyse.positionVolume = analyse.positionVolume - trade.volume
@@ -375,8 +376,7 @@ class TopIncrAlgo(AlgoTemplate):
                             self.sell(analyse.vtSymbol, newPrice, volume)
                             self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,volume)) 
             else:
-                if analyse.count == analyse.waitTime and analyse.orderId:
-                    self.writeLog(u'订单买入未成功取消买入:订单ID=%s' %(analyse.orderId))
+                if analyse.count == analyse.waitTime and analyse.orderId > 0:
                     self.cancelOrder(analyse.orderId)
                     analyse.orderId = 0
 
