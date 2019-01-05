@@ -48,6 +48,9 @@ class TopIncrAlgo(AlgoTemplate):
         
         self.writeLog(u'算法启动...请耐心等待')
         
+        huobiConnected = self.queryConnectEnabled('HUOBI')
+        binanceConnected = self.queryConnectEnabled('BINANCE')
+        
         if self.monitorCurrency.strip()=='':
         
             #根据条件查找要监控的合约
@@ -68,17 +71,19 @@ class TopIncrAlgo(AlgoTemplate):
         else:
             array = self.monitorCurrency.split(',')
             for currency in array:
-                symbol = currency.lower() + self.quoteCurrency.lower()
-                vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
-                contract = self.getContract(vtSymbol)
-                if contract:
-                    self.addAnalyzeDict(contract, 1) 
+                if huobiConnected:
+                    symbol = currency.lower() + self.quoteCurrency.lower()
+                    vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
+                    contract = self.getContract(vtSymbol)
+                    if contract:
+                        self.addAnalyzeDict(contract, 1) 
                 
-                symbol = currency.upper() + self.quoteCurrency.upper()
-                vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
-                contract = self.getContract(vtSymbol)
-                if contract:
-                    self.addAnalyzeDict(contract, 1) 
+                if binanceConnected:
+                    symbol = currency.upper() + self.quoteCurrency.upper()
+                    vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
+                    contract = self.getContract(vtSymbol)
+                    if contract:
+                        self.addAnalyzeDict(contract, 1) 
                 
                 
         #增加第二个监控币种
@@ -102,20 +107,23 @@ class TopIncrAlgo(AlgoTemplate):
             else:
                 array = self.monitorCurrency2.split(',')
                 for currency in array:
-                    symbol = currency.lower() + self.quoteCurrency2.lower()
-                    vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
-                    contract = self.getContract(vtSymbol)
-                    if contract:
-                        self.addAnalyzeDict(contract, 2) 
+                    if huobiConnected:
+                        symbol = currency.lower() + self.quoteCurrency2.lower()
+                        vtSymbol = '.'.join([symbol, EXCHANGE_HUOBI])               
+                        contract = self.getContract(vtSymbol)
+                        if contract:
+                            self.addAnalyzeDict(contract, 2) 
                     
-                    symbol = currency.upper() + self.quoteCurrency2.upper()
-                    vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
-                    contract = self.getContract(vtSymbol)
-                    if contract:
-                        self.addAnalyzeDict(contract, 2) 
+                    if binanceConnected:
+                        symbol = currency.upper() + self.quoteCurrency2.upper()
+                        vtSymbol = '.'.join([symbol, EXCHANGE_BINANCE])               
+                        contract = self.getContract(vtSymbol)
+                        if contract:
+                            self.addAnalyzeDict(contract, 2) 
         
         #对于币安，按照列表统一订阅，此时需要发起订阅websocket数据
-        self.commitSubscribe('BINANCE')
+        if binanceConnected:
+            self.commitSubscribe('BINANCE')
         
         #算法初始化为异步，避免获取K线事件回调先于算法初始化，故延时15s后再获取K线数据;K线数据更新异步，延迟再读取文件历史交易数据避免被覆盖
         self.timer = TaskTimer()
@@ -377,8 +385,10 @@ class TopIncrAlgo(AlgoTemplate):
                             self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,volume)) 
             else:
                 if analyse.count == analyse.waitTime and analyse.orderId > 0:
+                    self.writeLog(u'委托买入未成交，取消委托,订单号:%s,交易对象:%s' %(analyse.orderId, analyse.vtSymbol))
                     self.cancelOrder(analyse.orderId)
                     analyse.orderId = 0
+                    analyse.offset == OFFSET_OPEN
 
     
     #----------------------------------------------------------------------

@@ -60,6 +60,7 @@ class BinanceGateway(VtGateway):
         self.api = GatewayApi(self)
 
         self.qryEnabled = False         # 是否要启动循环查询
+        self.connectEnabled = False     # 是否使能连接
 
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
@@ -92,6 +93,7 @@ class BinanceGateway(VtGateway):
 
         # 创建行情和交易接口对象
         self.api.connect(apiKey, secretKey, symbols)
+        self.connectEnabled = True
 
         # 初始化并启动查询
         #self.initQuery()
@@ -170,7 +172,11 @@ class BinanceGateway(VtGateway):
     def commitSubscribe(self):
         """"""
         self.api.commitSubscribe()
-
+        
+    #----------------------------------------------------------------------
+    def queryConnectEnabled(self):
+        """"""
+        return self.connectEnabled
 
 ########################################################################
 class GatewayApi(BinanceApi):

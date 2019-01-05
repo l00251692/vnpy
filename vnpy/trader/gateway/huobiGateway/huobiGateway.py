@@ -50,6 +50,7 @@ class HuobiGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
 
         self.qryEnabled = False         # 是否要启动循环查询
+        self.connectEnabled = False     # 是否使能连接
 
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
@@ -83,6 +84,7 @@ class HuobiGateway(VtGateway):
         # 创建行情和交易接口对象
         self.dataApi.connect(exchange, symbols)
         self.tradeApi.connect(exchange, symbols, accessKey, secretKey)
+        self.connectEnabled = True
 
         # 初始化并启动查询
         self.initQuery()
@@ -184,7 +186,11 @@ class HuobiGateway(VtGateway):
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""
         self.qryEnabled = qryEnabled
-
+        
+    #----------------------------------------------------------------------
+    def queryConnectEnabled(self):
+        """"""
+        return self.connectEnabled        
 
 ########################################################################
 class HuobiDataApi(DataApi):

@@ -131,7 +131,17 @@ class MainEngine(object):
         gateway = self.getGateway(gatewayName)
         
         if gateway:
-            gateway.commitSubscribe()          
+            gateway.commitSubscribe()   
+            
+    #----------------------------------------------------------------------
+    def queryConnectEnabled(self, gatewayName):
+        """"""
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:        
+            return gateway.queryConnectEnabled()   
+        else:
+            return False
             
     #----------------------------------------------------------------------
     def unsubscribe(self, subscribeReq, gatewayName):
