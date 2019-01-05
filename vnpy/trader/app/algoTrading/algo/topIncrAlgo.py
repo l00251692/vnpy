@@ -257,8 +257,10 @@ class TopIncrAlgo(AlgoTemplate):
                 if analyse.increaseCount > 2 and analyse.offset == OFFSET_OPEN and analyse.flag != 1: 
                     price = min(current, tick.askPrice1)
                     #按照买入价格计算可以买入的数量
-                    if  analyse.lastSellPrice > 0 and price > analyse.lastSellPrice - analyse.priceTick * 10:
-                        return
+                    if  analyse.lastSellPrice > 0  and analyse.buyAverPrice > 0:
+                        priceDeap = analyse.lastSellPrice - analyse.buyAverPrice
+                        if price > analyse.lastSellPrice - priceDeap * 0.33:
+                            return
                     
                     volume = self.roundValue((analyse.orderFee - analyse.buyFee)/price, analyse.size)
                     if volume > 0:
