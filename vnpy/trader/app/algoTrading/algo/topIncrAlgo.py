@@ -269,7 +269,7 @@ class TopIncrAlgo(AlgoTemplate):
                         analyse.offset = OFFSET_CLOSE
                         analyse.lastPrice = current
                         #增加到监控列表里才能监听到订单的成交信息
-                        self.addSymbolsMonitor('HUOBI',analyse.symbol)
+                        self.addSymbolsMonitor(analyse.vtSymbol)
                         return
                     else:
                         analyse.offset = OFFSET_CLOSE

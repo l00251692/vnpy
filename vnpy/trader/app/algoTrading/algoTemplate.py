@@ -150,14 +150,14 @@ class AlgoTemplate(object):
 	return self.engine.queryConnectEnabled(gatewayName)	    
 	
     #----------------------------------------------------------------------
-    def addSymbolsMonitor(self, gatewayName, symbol):
+    def addSymbolsMonitor(self, vtSymbol):
 	""""""
-	self.engine.addSymbolsMonitor(gatewayName, symbol)	
+	self.engine.addSymbolsMonitor(vtSymbol)	
 	
     #----------------------------------------------------------------------
-    def delSymbolsMonitor(self, gatewayName, symbol):
+    def delSymbolsMonitor(self, vtSymbol):
 	""""""
-	self.engine.delSymbolsMonitor(gatewayName, symbol)		
+	self.engine.delSymbolsMonitor(vtSymbol)		
 	
     #----------------------------------------------------------------------
     def unsubscribe(self, vtSymbol):

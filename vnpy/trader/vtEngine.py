@@ -152,21 +152,23 @@ class MainEngine(object):
             gateway.unsubscribe(subscribeReq)
             
     #----------------------------------------------------------------------
-    def addSymbolsMonitor(self, gatewayName, symbol):
+    def addSymbolsMonitor(self, vtSymbol):
         """"""
-        gateway = self.getGateway(gatewayName)
-        
-        if gateway:
-            gateway.addSymbolsMonitor(symbol)     
-            
+        contract = self.getContract(vtSymbol)
+        if contract:
+            gateway = self.getGateway(contract.gatewayName)
+            if gateway:
+                gateway.addSymbolsMonitor(contract.symbol)                
+              
     #----------------------------------------------------------------------
-    def delSymbolsMonitor(self, gatewayName, symbol):
+    def delSymbolsMonitor(self, vtSymbol):
         """"""
-        gateway = self.getGateway(gatewayName)
-        
-        if gateway:
-            gateway.delSymbolsMonitor(symbol)             
-            
+        contract = self.getContract(vtSymbol)
+        if contract:        
+            gateway = self.getGateway(contract.gatewayName)
+            if gateway:
+                gateway.delSymbolsMonitor(contract.symbol)             
+      
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""

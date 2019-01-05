@@ -189,14 +189,14 @@ class AlgoEngine(object):
         self.mainEngine.unsubscribe(req, contract.gatewayName)      
         
     #----------------------------------------------------------------------
-    def addSymbolsMonitor(self, gatewayName, symbol):
+    def addSymbolsMonitor(self, vtSymbol):
         """"""
-        self.mainEngine.addSymbolsMonitor(gatewayName, symbol) 
+        self.mainEngine.addSymbolsMonitor(vtSymbol) 
         
     #----------------------------------------------------------------------
-    def delSymbolsMonitor(self, gatewayName, symbol):
+    def delSymbolsMonitor(self, vtSymbol):
         """"""
-        self.mainEngine.delSymbolsMonitor(gatewayName, symbol)         
+        self.mainEngine.delSymbolsMonitor(vtSymbol)         
 
     #----------------------------------------------------------------------
     def sendOrder(self, algo, vtSymbol, direction, price, volume, 
