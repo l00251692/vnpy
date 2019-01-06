@@ -174,6 +174,7 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.orderId2 = 0
         analyse.positionCounter = 0 
         analyse.buyTime = 0 
+        analyse.buyPrice = 0
         analyse.flag = 0
         self.analyseDict[contract.vtSymbol] = analyse
         
@@ -247,7 +248,21 @@ class TopIncrAlgo(AlgoTemplate):
         if (current <= base):
             #decline ,add pubishment mechanisms
             analyse.increaseCount -= 1
-            return
+            #增加强制平仓和买入
+            if current < analyse.analyse.buyPrice * (1 - 0.05) and analyse.positionVolume > 0 and analyse.flag != 2:
+                volume = self.roundValue(analyse.positionVolume, analyse.size)
+                price = current
+                if volume > 0:
+                    if analyse.orderId2 > 0:
+                        self.cancelOrder(analyse.orderId2)
+                    self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
+                    self.sell(vtSymbol, price, volume)
+                    self.writeLog(u'%s强制平仓，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
+                    
+                #设置要等待卖出成交后再继续卖出，否则会导致不断卖出，超过持有量
+                analyse.flag = 2  #
+                
+                return
        
         increase = (current - base)/base
         
@@ -271,6 +286,7 @@ class TopIncrAlgo(AlgoTemplate):
                         analyse.count = 0
                         analyse.orderId = self.buy(vtSymbol, price, volume)
                         analyse.buyTime = int(time.time())   #秒 时间戳
+                        analyse.buyPrice = price
                         self.writeLog(u'%s合约买入委托买入,订单ID:%s,买入价格:%s,买入数量:%s' %(vtSymbol, analyse.orderId, price, volume))
                         analyse.offset = OFFSET_CLOSE
                         analyse.lastPrice = current
@@ -291,7 +307,7 @@ class TopIncrAlgo(AlgoTemplate):
             price = max(current, tick.askPrice1 - analyse.priceTick)
             if volume > 0:
                 self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
-                self.sell(vtSymbol, price, volume)
+                analyse.orderId2 = self.sell(vtSymbol, price, volume)
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
                 analyse.flag = 1  #今天不再买入
             
@@ -388,7 +404,7 @@ class TopIncrAlgo(AlgoTemplate):
                         volume = self.roundValue(analyse.positionVolume, analyse.size)
                         if volume > 0:
                             self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
-                            self.sell(analyse.vtSymbol, tick.bidPrice1, volume)
+                            analyse.orderId2 = self.sell(analyse.vtSymbol, tick.bidPrice1, volume)
                             self.writeLog(u'%s达到设置等待时间，微量上涨，卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,tick.bidPrice1,volume))
                     else:
                         #否则就挂单，可能长期卖不出去，手续费是0.002
@@ -397,7 +413,7 @@ class TopIncrAlgo(AlgoTemplate):
                         volume = self.roundValue(analyse.positionVolume, analyse.size)
                         if volume > 0:  
                             self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
-                            self.sell(analyse.vtSymbol, newPrice, volume)
+                            analyse.orderId2 = self.sell(analyse.vtSymbol, newPrice, volume)
                             self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,volume)) 
             else:
                 if analyse.count == analyse.waitTime and analyse.orderId > 0:

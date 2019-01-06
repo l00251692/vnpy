@@ -484,6 +484,7 @@ class VtAnalyseData(object):
         self.flag = EMPTY_INT        #标记位,0 init,1 today_close_buy
         self.positionCounter = EMPTY_INT #用户判断是否继续持有
         self.buyTime = EMPTY_INT #上次购买时间
+        self.buyPrice = EMPTY_INT #上次购买价格
         
         
         self.tradeList = []             #order history
