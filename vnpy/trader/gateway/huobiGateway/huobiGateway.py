@@ -134,7 +134,7 @@ class HuobiGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryInfo(self):
         """查询委托、成交、持仓"""
-        #self.tradeApi.qryOrder()
+        self.tradeApi.qryOrder()
         self.tradeApi.qryTrade()
         #self.tradeApi.qryPosition()
 

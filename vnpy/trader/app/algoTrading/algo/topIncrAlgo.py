@@ -211,7 +211,10 @@ class TopIncrAlgo(AlgoTemplate):
                     self.analyseDict[item.vtSymbol].lastSellPrice  = item.lastSellPrice
                     self.analyseDict[item.vtSymbol].offset = item.offset
                     self.analyseDict[item.vtSymbol].orderId = item.orderId
+                    self.analyseDict[item.vtSymbol].orderId2 = item.orderId2
                     self.analyseDict[item.vtSymbol].flag = item.flag
+                    self.analyseDict[item.vtSymbol].buyTime = item.buyTime
+                    self.analyseDict[item.vtSymbol].buyPrice = item.buyPrice
             self.writeLog(u'读取上次买卖记录成功')
         f.close()
             
