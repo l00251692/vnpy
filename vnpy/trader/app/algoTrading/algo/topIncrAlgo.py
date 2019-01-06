@@ -248,15 +248,15 @@ class TopIncrAlgo(AlgoTemplate):
         if (current <= base):
             #decline ,add pubishment mechanisms
             analyse.increaseCount -= 1
-            #增加强制平仓和买入
-            if current < analyse.analyse.buyPrice * (1 - 0.05) and analyse.positionVolume > 0 and analyse.flag != 2:
+            #增加强制平仓
+            if current < analyse.buyPrice * (1 - 0.05) and analyse.positionVolume > 0 and analyse.flag != 2:
                 volume = self.roundValue(analyse.positionVolume, analyse.size)
                 price = current
                 if volume > 0:
                     if analyse.orderId2 > 0:
                         self.cancelOrder(analyse.orderId2)
                     self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
-                    self.sell(vtSymbol, price, volume)
+                    analyse.orderId2 = self.sell(vtSymbol, price, volume)
                     self.writeLog(u'%s强制平仓，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
                     
                 #设置要等待卖出成交后再继续卖出，否则会导致不断卖出，超过持有量
