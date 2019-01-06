@@ -178,6 +178,11 @@ class AlgoTemplate(object):
     def cancelOrder(self, vtOrderID):
         """"""
         self.engine.cancelOrder(self, vtOrderID)
+	
+    #----------------------------------------------------------------------
+    def getOrder(self, vtOrderID):
+	""""""
+	self.engine.getOrder(vtOrderID)	
     
     #----------------------------------------------------------------------
     def cancelAll(self):

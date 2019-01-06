@@ -256,6 +256,12 @@ class AlgoEngine(object):
         req.sessionID = order.sessionID
         self.mainEngine.cancelOrder(req, order.gatewayName)
         
+    
+    #----------------------------------------------------------------------
+    def getOrder(self, vtOrderID):
+        """撤单"""
+        return self.mainEngine.getOrder(vtOrderID)
+             
     #----------------------------------------------------------------------
     def writeLog(self, content, algo=None):
         """输出日志"""

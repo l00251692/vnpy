@@ -289,7 +289,7 @@ class TopIncrAlgo(AlgoTemplate):
                 self.writeLog(u'%s合约买入委托卖出，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
                 analyse.flag = 1  #今天不再买入
             
-            #设置要等待卖出后再继续卖出，否则会导致不断卖出，超过持有量
+            #设置要等待卖出成交后再继续卖出，否则会导致不断卖出，超过持有量
             analyse.offset = OFFSET_UNKNOWN
         
     #----------------------------------------------------------------------
@@ -363,6 +363,14 @@ class TopIncrAlgo(AlgoTemplate):
             if analyse.positionVolume > 0:
                 analyse.count += 1
                 if analyse.count == analyse.waitTime:
+                    order = self.getOrder(analyse.orderId)
+                    if order:
+                        if order.direction == DIRECTION_LONG and order.tradedVolume < order.totalVolume:
+                            self.writeLog(u'错误,%s达到设置时间，取消买入部分成功的订单:%s' %(analyse.vtSymbol,analyse.orderId))
+                            self.cancelOrder(analyse.orderId)
+                    else:
+                        self.writeLog(u'错误,%s达到设置时间，未查询到订单信息:%s' %(analyse.vtSymbol,analyse.orderId))
+                        
                     #如果已经委托卖出，则不再继续卖出
                     if analyse.offset == OFFSET_UNKNOWN:
                         return
