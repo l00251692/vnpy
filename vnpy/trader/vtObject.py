@@ -482,9 +482,13 @@ class VtAnalyseData(object):
         self.lastSellPrice = EMPTY_FLOAT
         self.count = EMPTY_INT       #timer count
         self.flag = EMPTY_INT        #标记位,0 init,1 today_close_buy
+        self.positionCounter = EMPTY_INT #用户判断是否继续持有
+        self.buyTime = EMPTY_INT #上次购买时间
+        
         
         self.tradeList = []             #order history
-        self.orderId = EMPTY_INT            #orderId buy
+        self.orderId = EMPTY_STRING            #orderId buy
+        self.orderId2 = EMPTY_STRING            #orderId sell
         self.positionVolume = EMPTY_FLOAT #position volume
         self.offset = EMPTY_UNICODE  #开仓平仓状态
         

@@ -171,6 +171,9 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.lastSellPrice = 0.0
         analyse.offset = OFFSET_OPEN
         analyse.orderId = 0
+        analyse.orderId2 = 0
+        analyse.positionCounter = 0 
+        analyse.buyTime = 0 
         analyse.flag = 0
         self.analyseDict[contract.vtSymbol] = analyse
         
@@ -267,6 +270,7 @@ class TopIncrAlgo(AlgoTemplate):
                         analyse.buyFee  = analyse.buyFee + volume * price #买入用了多少基本币
                         analyse.count = 0
                         analyse.orderId = self.buy(vtSymbol, price, volume)
+                        analyse.buyTime = int(time.time())   #秒 时间戳
                         self.writeLog(u'%s合约买入委托买入,订单ID:%s,买入价格:%s,买入数量:%s' %(vtSymbol, analyse.orderId, price, volume))
                         analyse.offset = OFFSET_CLOSE
                         analyse.lastPrice = current
@@ -280,7 +284,9 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.lastPrice = current
                 
         if analyse.buyAverPrice > 0 and (current - analyse.buyAverPrice)/analyse.buyAverPrice > analyse.outPer and  analyse.offset != OFFSET_UNKNOWN:
-            #sell
+            #sell,如果当前时间比买入不到三分钟则不卖
+            if time.time() - analyse.buyTime < 180: 
+                return
             volume = self.roundValue(analyse.positionVolume, analyse.size)
             price = max(current, tick.askPrice1 - analyse.priceTick)
             if volume > 0:
