@@ -301,8 +301,8 @@ class TopIncrAlgo(AlgoTemplate):
         analyse.lastPrice = current
                 
         if analyse.buyAverPrice > 0 and (current - analyse.buyAverPrice)/analyse.buyAverPrice > analyse.outPer and  analyse.offset != OFFSET_UNKNOWN:
-            #sell,如果当前时间比买入不到三分钟则不卖
-            if time.time() - analyse.buyTime < 180: 
+            #sell,如果当前时间比买入不到五分钟则不卖
+            if time.time() - analyse.buyTime < 300: 
                 return
             volume = self.roundValue(analyse.positionVolume, analyse.size)
             price = max(current, tick.askPrice1 - analyse.priceTick)
@@ -386,13 +386,15 @@ class TopIncrAlgo(AlgoTemplate):
             if analyse.positionVolume > 0:
                 analyse.count += 1
                 if analyse.count == analyse.waitTime:
-                    order = self.getOrder(analyse.orderId)
-                    if order:
-                        if order.direction == DIRECTION_LONG and order.tradedVolume < order.totalVolume:
-                            self.writeLog(u'错误,%s达到设置时间，取消买入部分成功的订单:%s' %(analyse.vtSymbol,analyse.orderId))
-                            self.cancelOrder(analyse.orderId)
-                    else:
-                        self.writeLog(u'错误,%s达到设置时间，未查询到订单信息:%s' %(analyse.vtSymbol,analyse.orderId))
+                    #如果从文件读取了持仓量，但是orderId为0，避免这种情况错误打印增加过滤条件
+                    if analyse.orderId > 0:
+                        order = self.getOrder(analyse.orderId)
+                        if order:
+                            if order.direction == DIRECTION_LONG and order.tradedVolume < order.totalVolume:
+                                self.writeLog(u'错误,%s达到设置时间，取消买入部分成功的订单:%s' %(analyse.vtSymbol,analyse.orderId))
+                                self.cancelOrder(analyse.orderId)
+                        else:
+                            self.writeLog(u'错误,%s达到设置时间，未查询到订单信息:%s' %(analyse.vtSymbol,analyse.orderId))
                         
                     #如果已经委托卖出，则不再继续卖出
                     if analyse.offset == OFFSET_UNKNOWN:
