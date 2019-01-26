@@ -389,12 +389,13 @@ class TopIncrAlgo(AlgoTemplate):
                     #如果从文件读取了持仓量，但是orderId为0，避免这种情况错误打印增加过滤条件
                     if analyse.orderId > 0:
                         order = self.getOrder(analyse.orderId)
-                        if order:
+                        if not order:
+                            self.writeLog(u'错误,%s达到设置时间，未查询到订单信息:%s' %(analyse.vtSymbol,analyse.orderId))
+                        else:
                             if order.direction == DIRECTION_LONG and order.tradedVolume < order.totalVolume:
                                 self.writeLog(u'错误,%s达到设置时间，取消买入部分成功的订单:%s' %(analyse.vtSymbol,analyse.orderId))
                                 self.cancelOrder(analyse.orderId)
-                        else:
-                            self.writeLog(u'错误,%s达到设置时间，未查询到订单信息:%s' %(analyse.vtSymbol,analyse.orderId))
+                            
                         
                     #如果已经委托卖出，则不再继续卖出
                     if analyse.offset == OFFSET_UNKNOWN:
@@ -419,7 +420,7 @@ class TopIncrAlgo(AlgoTemplate):
                             analyse.orderId2 = self.sell(analyse.vtSymbol, newPrice, volume)
                             self.writeLog(u'%s达到设置等待时间，下降，挂单卖出价格:%s,卖出数量:%s' %(analyse.vtSymbol,newPrice,volume)) 
             else:
-                if analyse.count == analyse.waitTime and analyse.orderId > 0:
+                if analyse.orderId > 0 and (int(time.time()) - analyse.buyTime)  > analyse.waitTime:
                     self.writeLog(u'委托买入未成交，取消委托,订单号:%s,交易对象:%s' %(analyse.orderId, analyse.vtSymbol))
                     self.cancelOrder(analyse.orderId)
                     analyse.orderId = 0
