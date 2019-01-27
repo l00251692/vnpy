@@ -565,7 +565,7 @@ class OrderMonitor(BasicMonitor):
         self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
-        #self.registerEvent()
+        self.registerEvent()
         self.connectSignal()
         
     #----------------------------------------------------------------------
