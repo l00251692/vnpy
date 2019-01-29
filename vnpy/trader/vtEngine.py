@@ -623,7 +623,7 @@ class DataEngine(object):
     def getOrder(self, vtOrderID):
         """查询委托"""
         try:
-            return self.orderDict[vtOrderID]
+            return self.workingOrderDict[vtOrderID]
         except KeyError:
             return None
     
