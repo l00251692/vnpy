@@ -180,9 +180,15 @@ class AlgoTemplate(object):
         self.engine.cancelOrder(self, vtOrderID)
 	
     #----------------------------------------------------------------------
-    def getOrder(self, vtOrderID):
+    def getActiveOrder(self, vtOrderID):
 	""""""
-	self.engine.getOrder(vtOrderID)	
+	if not self.activeOrderDict:
+	    return None
+	
+	try:
+	    return self.activeOrderDict[vtOrderID]
+	except KeyError:
+	    return None	
     
     #----------------------------------------------------------------------
     def cancelAll(self):

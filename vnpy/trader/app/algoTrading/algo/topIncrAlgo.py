@@ -250,15 +250,15 @@ class TopIncrAlgo(AlgoTemplate):
             #decline ,add pubishment mechanisms
             analyse.increaseCount -= 1
             #增加强制平仓
-            if current < analyse.buyPrice * (1 - 0.05) and analyse.positionVolume > 0 and analyse.flag != 2:
+            if current < analyse.buyPrice * (1 - 0.1) and analyse.positionVolume > 0 and analyse.flag != 2:
                 volume = self.roundValue(analyse.positionVolume, analyse.size)
                 price = current
                 if volume > 0:
                     if analyse.orderId2 > 0:
                         self.cancelOrder(analyse.orderId2)
                     self.writeLog(u'合约此时增长次数:%s' %(analyse.increaseCount))
-                    analyse.orderId2 = self.sell(vtSymbol, price, volume)
-                    self.writeLog(u'%s强制平仓，卖出价格:%s,卖出数量:%s' %(vtSymbol,price,volume))
+                    #analyse.orderId2 = self.sell(vtSymbol, price, volume)
+                    self.writeLog(u'%s强制平仓，卖出价格:%s,卖出数量:%s,买入价格:%s' %(vtSymbol,price,volume,analyse.buyPrice))
                     
                 #设置要等待卖出成交后再继续卖出，否则会导致不断卖出，超过持有量
                 analyse.flag = 2  #
@@ -388,7 +388,7 @@ class TopIncrAlgo(AlgoTemplate):
                 if analyse.count == analyse.waitTime:
                     #如果从文件读取了持仓量，但是orderId为0，避免这种情况错误打印增加过滤条件
                     if analyse.orderId > 0:
-                        order = self.getOrder(analyse.orderId)
+                        order = self.getActiveOrder(analyse.orderId)
                         if not order:
                             self.writeLog(u'错误,%s达到设置时间，未查询到订单信息:%s' %(analyse.vtSymbol,analyse.orderId))
                         else:
